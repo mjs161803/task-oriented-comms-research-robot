@@ -1,0 +1,23 @@
+version: '3.8'
+
+# NOTE: This docker-compose file must be run from the repository root directory
+
+services:
+  ros2-simulation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: task-oriented-comms-robot:latest
+    container_name: turtlebot-simulation
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - TURTLEBOT3_MODEL=burger
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Mount src directory for live code changes
+      - ./src:/root/workspace/src:rw
+    network_mode: host
+    stdin_open: true
+    tty: true
+    command: bash
