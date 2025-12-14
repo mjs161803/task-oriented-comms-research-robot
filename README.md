@@ -5,11 +5,77 @@ Simulation to explore task-oriented communication schemes to enable robot task c
 This repository contains a ROS2 Humble workspace with a Gazebo simulation featuring a TurtleBot3 robot and interactive blocks that the robot can push around.
 
 ## Prerequisites
+
+### Option 1: Docker (Recommended)
+- Docker
+- Docker Compose
+- X11 server (for Gazebo GUI)
+
+### Option 2: Native Installation
 - ROS2 Humble
 - Gazebo (installed with ROS2)
 - TurtleBot3 packages
 
 ## Installation
+
+### Option 1: Using Docker (Recommended)
+
+Docker provides an isolated environment with all dependencies pre-installed, making it the easiest way to get started.
+
+#### Prerequisites for Docker
+1. Install Docker and Docker Compose:
+   - Follow the official Docker installation guide: https://docs.docker.com/get-docker/
+   - Install Docker Compose: https://docs.docker.com/compose/install/
+
+2. Allow X11 forwarding (for Gazebo GUI):
+   ```bash
+   xhost +local:docker
+   ```
+
+#### Build and Run with Docker Compose
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/mjs161803/task-oriented-comms-research-robot.git
+   cd task-oriented-comms-research-robot
+   ```
+
+2. Build the Docker image:
+   ```bash
+   docker-compose build
+   ```
+
+3. Start the container:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. Access the container shell:
+   ```bash
+   docker-compose exec ros2-simulation bash
+   ```
+
+5. Inside the container, launch the simulation:
+   ```bash
+   ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
+   ```
+
+#### Alternative: Using Docker directly
+```bash
+# Build the image
+docker build -t task-oriented-comms-robot:latest .
+
+# Run the container with GUI support
+docker run -it --rm \
+  --name turtlebot-sim \
+  --network host \
+  --privileged \
+  -e DISPLAY=$DISPLAY \
+  -e QT_X11_NO_MITSHM=1 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  task-oriented-comms-robot:latest
+```
+
+### Option 2: Native Installation
 
 ### Install ROS2 Humble
 Follow the official ROS2 Humble installation guide: https://docs.ros.org/en/humble/Installation.html
@@ -31,7 +97,9 @@ Then source it:
 source ~/.bashrc
 ```
 
-## Building the Workspace
+## Building the Workspace (Native Installation Only)
+
+If you're using Docker, the workspace is automatically built during image creation. For native installations:
 
 1. Clone this repository (if not already done):
 ```bash
@@ -94,6 +162,8 @@ The simulation world includes:
 ## Package Structure
 ```
 task-oriented-comms-research-robot/
+├── docker/
+│   └── ros_entrypoint.sh         # Docker entrypoint script
 ├── src/
 │   └── turtlebot_simulation/
 │       ├── launch/
@@ -102,5 +172,21 @@ task-oriented-comms-research-robot/
 │       │   └── turtlebot_blocks.world
 │       ├── CMakeLists.txt
 │       └── package.xml
+├── .dockerignore                  # Docker build exclusions
+├── docker-compose.yml             # Docker Compose configuration
+├── Dockerfile                     # Docker image definition
 └── README.md
 ```
+
+## Docker Notes
+
+- The Docker image is based on `osrf/ros:humble-desktop-full` and includes all necessary dependencies
+- Gazebo GUI support is enabled through X11 forwarding
+- The workspace is automatically built during image creation
+- Source code changes can be made on the host and will be reflected in the container (when using docker-compose with volume mounts)
+- To rebuild the workspace inside a running container:
+  ```bash
+  cd /root/workspace
+  colcon build
+  source install/setup.bash
+  ```
