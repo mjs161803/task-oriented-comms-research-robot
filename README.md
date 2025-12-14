@@ -33,6 +33,9 @@ Docker provides an isolated environment with all dependencies pre-installed, mak
    ```
 
 #### Build and Run with Docker Compose
+
+**Important**: All docker-compose commands must be run from the repository root directory.
+
 1. Clone this repository:
    ```bash
    git clone https://github.com/mjs161803/task-oriented-comms-research-robot.git

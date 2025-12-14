@@ -12,7 +12,7 @@ if ! dpkg -s ros-humble-turtlebot3-gazebo >/dev/null 2>&1; then
         ros-humble-turtlebot3 \
         ros-humble-turtlebot3-gazebo \
         ros-humble-turtlebot3-description \
-        2>/dev/null || echo "Note: TurtleBot3 packages may need manual installation"
+        2>/dev/null || echo "Warning: TurtleBot3 package installation failed, manual installation may be required"
     rm -rf /var/lib/apt/lists/*
 fi
 

@@ -1,5 +1,7 @@
 version: '3.8'
 
+# NOTE: This docker-compose file must be run from the repository root directory
+
 services:
   ros2-simulation:
     build:
@@ -13,6 +15,7 @@ services:
       - TURTLEBOT3_MODEL=burger
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Mount src directory for live code changes
       - ./src:/root/workspace/src:rw
     network_mode: host
     stdin_open: true
