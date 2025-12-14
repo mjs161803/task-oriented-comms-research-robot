@@ -65,8 +65,8 @@ This will:
 You can customize the launch with these arguments:
 
 - `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
-- `headless:=true/false` - Run in headless mode (default: false)
 - `use_sim_time:=true/false` - Use simulation time (default: true)
+- `world:=/path/to/world` - Path to custom world file
 
 Example:
 ```bash
@@ -100,7 +100,6 @@ task-oriented-comms-research-robot/
 │       │   └── turtlebot_gazebo.launch.py
 │       ├── worlds/
 │       │   └── turtlebot_blocks.world
-│       ├── config/
 │       ├── CMakeLists.txt
 │       └── package.xml
 └── README.md

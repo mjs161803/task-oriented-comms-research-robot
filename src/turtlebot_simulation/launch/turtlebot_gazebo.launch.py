@@ -2,13 +2,12 @@
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
@@ -26,7 +25,6 @@ def generate_launch_description():
     # Launch arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     gui = LaunchConfiguration('gui', default='true')
-    headless = LaunchConfiguration('headless', default='false')
     world = LaunchConfiguration('world', default=world_file)
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
@@ -39,12 +37,6 @@ def generate_launch_description():
         'gui',
         default_value='true',
         description='Set to "true" to launch Gazebo GUI'
-    )
-    
-    declare_headless_arg = DeclareLaunchArgument(
-        'headless',
-        default_value='false',
-        description='Set to "true" to run Gazebo in headless mode'
     )
     
     declare_world_arg = DeclareLaunchArgument(
@@ -80,25 +72,14 @@ def generate_launch_description():
         condition=IfCondition(gui)
     )
     
-    # Spawn Turtlebot3 model
-    # Set TURTLEBOT3_MODEL environment variable
-    turtlebot3_model = os.environ.get('TURTLEBOT3_MODEL', 'burger')
-    
-    # Get URDF file path for TurtleBot3
-    urdf_file = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
-        'models',
-        'turtlebot3_{}'.format(turtlebot3_model),
-        'model.sdf'
-    )
-    
-    # Spawn TurtleBot3
+    # Spawn Turtlebot3 model using gazebo model database
+    # The TurtleBot3 burger model should be available if turtlebot3_gazebo is installed
     spawn_turtlebot = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=[
-            '-entity', 'turtlebot3',
-            '-file', urdf_file,
+            '-entity', 'turtlebot3_burger',
+            '-database', 'turtlebot3_burger',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',
@@ -110,9 +91,9 @@ def generate_launch_description():
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
-        declare_headless_arg,
         declare_world_arg,
         gzserver,
         gzclient,
         spawn_turtlebot
     ])
+
