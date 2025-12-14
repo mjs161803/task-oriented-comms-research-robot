@@ -60,9 +60,20 @@ Docker provides an isolated environment with all dependencies pre-installed, mak
    ```
 
 #### Alternative: Using Docker directly
+
+You can also use the provided helper script to run the container:
 ```bash
 # Build the image
 docker build -t task-oriented-comms-robot:latest .
+
+# Run using the helper script
+./docker/run.sh
+```
+
+Or run Docker commands manually:
+```bash
+# Allow X11 forwarding
+xhost +local:docker
 
 # Run the container with GUI support
 docker run -it --rm \
@@ -73,6 +84,14 @@ docker run -it --rm \
   -e QT_X11_NO_MITSHM=1 \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
   task-oriented-comms-robot:latest
+```
+
+#### Installing TurtleBot3 Packages in Container
+
+When you first run the container, TurtleBot3 packages will be automatically installed if not already present. However, if you need to install them manually, run:
+```bash
+apt-get update
+apt-get install -y ros-humble-turtlebot3 ros-humble-turtlebot3-gazebo ros-humble-turtlebot3-description
 ```
 
 ### Option 2: Native Installation

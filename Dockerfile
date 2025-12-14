@@ -6,12 +6,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TURTLEBOT3_MODEL=burger
 
 # Install additional dependencies
+# Note: TurtleBot3 packages may need to be installed when running the container
+# if they are not available in package repos during build
 RUN apt-get update && apt-get install -y \
-    ros-humble-turtlebot3 \
-    ros-humble-turtlebot3-gazebo \
-    ros-humble-turtlebot3-description \
-    ros-humble-gazebo-ros-pkgs \
     python3-colcon-common-extensions \
+    wget \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create workspace
