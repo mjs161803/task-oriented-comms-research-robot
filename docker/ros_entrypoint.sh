@@ -5,10 +5,14 @@ set -e
 source /opt/ros/humble/setup.bash
 
 # Install TurtleBot3 packages if not already installed
-if ! dpkg -l | grep -q ros-humble-turtlebot3-gazebo; then
+if ! dpkg -s ros-humble-turtlebot3-gazebo >/dev/null 2>&1; then
     echo "Installing TurtleBot3 packages..."
     apt-get update
-    apt-get install -y ros-humble-turtlebot3* 2>/dev/null || echo "Note: TurtleBot3 packages may need manual installation"
+    apt-get install -y \
+        ros-humble-turtlebot3 \
+        ros-humble-turtlebot3-gazebo \
+        ros-humble-turtlebot3-description \
+        2>/dev/null || echo "Note: TurtleBot3 packages may need manual installation"
     rm -rf /var/lib/apt/lists/*
 fi
 

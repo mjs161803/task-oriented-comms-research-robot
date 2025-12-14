@@ -10,7 +10,6 @@ xhost +local:docker 2>/dev/null || echo "Note: xhost command not available. GUI 
 docker run -it --rm \
   --name turtlebot-sim \
   --network host \
-  --privileged \
   -e DISPLAY=${DISPLAY} \
   -e QT_X11_NO_MITSHM=1 \
   -e TURTLEBOT3_MODEL=burger \
