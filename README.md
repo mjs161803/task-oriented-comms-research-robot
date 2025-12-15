@@ -2,7 +2,7 @@
 Simulation to explore task-oriented communication schemes to enable robot task completion.
 
 ## Overview
-This repository contains a ROS2 Humble workspace with a Gazebo simulation featuring a TurtleBot3 robot and interactive blocks that the robot can push around.
+This repository contains a ROS2 Humble workspace with a Gazebo simulation featuring a TurtleBot3 Waffle Pi robot with a Pi Camera and interactive blocks that the robot can push around.
 
 ## Prerequisites
 
@@ -110,7 +110,7 @@ sudo apt install ros-humble-turtlebot3* ros-humble-gazebo-ros-pkgs
 ### Set TurtleBot3 Model
 Add this to your `~/.bashrc`:
 ```bash
-export TURTLEBOT3_MODEL=burger
+export TURTLEBOT3_MODEL=waffle_pi
 ```
 
 Then source it:
@@ -147,8 +147,9 @@ ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
 
 This will:
 - Start Gazebo with a custom world
-- Spawn a TurtleBot3 robot at the origin
+- Spawn a TurtleBot3 Waffle Pi robot with Pi Camera at the origin
 - Place four colored blocks (red, green, blue, yellow) in the world that the robot can push
+- Enable camera streaming at 640x480 resolution to ROS2 topics
 
 ### Launch Arguments
 You can customize the launch with these arguments:
@@ -168,6 +169,23 @@ In a new terminal, you can control the TurtleBot using keyboard teleop:
 ```bash
 source install/setup.bash
 ros2 run turtlebot3_teleop teleop_keyboard
+```
+
+## Camera Information
+
+The TurtleBot3 Waffle Pi model includes a Raspberry Pi Camera that publishes images to ROS2 topics:
+
+- **Image Topic**: `/camera/image_raw` - Raw camera images (640x480 resolution)
+- **Camera Info Topic**: `/camera/camera_info` - Camera calibration and metadata
+
+You can view the camera feed using:
+```bash
+ros2 run rqt_image_view rqt_image_view
+```
+
+Or list all available camera topics:
+```bash
+ros2 topic list | grep camera
 ```
 
 ## World Description

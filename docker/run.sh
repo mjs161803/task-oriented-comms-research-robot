@@ -24,7 +24,7 @@ docker run -it --rm \
   --network host \
   -e DISPLAY=${DISPLAY} \
   -e QT_X11_NO_MITSHM=1 \
-  -e TURTLEBOT3_MODEL=burger \
+  -e TURTLEBOT3_MODEL=waffle_pi \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
   -v "$REPO_ROOT/src:/root/workspace/src:rw" \
   task-oriented-comms-robot:latest \
