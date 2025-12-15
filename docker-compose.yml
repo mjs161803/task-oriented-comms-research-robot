@@ -12,7 +12,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - TURTLEBOT3_MODEL=burger
+      - TURTLEBOT3_MODEL=waffle_pi
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       # Mount src directory for live code changes

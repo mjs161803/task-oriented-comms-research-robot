@@ -3,7 +3,7 @@ FROM osrf/ros:humble-desktop-full
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TURTLEBOT3_MODEL=burger
+ENV TURTLEBOT3_MODEL=waffle_pi
 
 # Install additional dependencies
 # Note: TurtleBot3 packages may need to be installed when running the container

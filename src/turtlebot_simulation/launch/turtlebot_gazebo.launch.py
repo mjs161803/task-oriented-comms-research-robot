@@ -73,13 +73,13 @@ def generate_launch_description():
     )
     
     # Spawn Turtlebot3 model using gazebo model database
-    # The TurtleBot3 burger model should be available if turtlebot3_gazebo is installed
+    # The TurtleBot3 waffle_pi model should be available if turtlebot3_gazebo is installed
     spawn_turtlebot = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         arguments=[
-            '-entity', 'turtlebot3_burger',
-            '-database', 'turtlebot3_burger',
+            '-entity', 'turtlebot3_waffle_pi',
+            '-database', 'turtlebot3_waffle_pi',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',
