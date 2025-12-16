@@ -23,12 +23,14 @@ docker run -it --rm \
   --name turtlebot-sim \
   --network host \
   --gpus all \
+  --device /dev/input:/dev/input \
   -e DISPLAY=${DISPLAY} \
   -e QT_X11_NO_MITSHM=1 \
   -e TURTLEBOT3_MODEL=waffle_pi \
   -e NVIDIA_VISIBLE_DEVICES=all \
   -e NVIDIA_DRIVER_CAPABILITIES=all \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v /dev/input:/dev/input:ro \
   -v "$REPO_ROOT/src:/root/workspace/src:rw" \
   task-oriented-comms-robot:latest \
   "$@"

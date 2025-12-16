@@ -62,6 +62,8 @@ Docker provides an isolated environment with all dependencies pre-installed, mak
    ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
    ```
 
+   **Note**: The Docker container has access to USB joystick devices connected to the host. The joystick nodes are launched automatically. If no joystick is connected, the nodes will report an error but the simulation will still run normally.
+
 #### Alternative: Using Docker directly
 
 You can also use the provided helper script to run the container:
@@ -78,13 +80,15 @@ Or run Docker commands manually:
 # Allow X11 forwarding
 xhost +local:docker
 
-# Run the container with GUI support
+# Run the container with GUI and joystick support
 docker run -it --rm \
   --name turtlebot-sim \
   --network host \
+  --device /dev/input:/dev/input \
   -e DISPLAY=$DISPLAY \
   -e QT_X11_NO_MITSHM=1 \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v /dev/input:/dev/input:ro \
   task-oriented-comms-robot:latest
 ```
 
@@ -165,11 +169,60 @@ ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py gui:=false
 
 ## Controlling the TurtleBot
 
-In a new terminal, you can control the TurtleBot using keyboard teleop:
+The simulation includes **twist_mux** for managing multiple velocity command sources with priorities. The robot can be controlled via joystick or keyboard.
+
+### Joystick Control (Recommended)
+
+The simulation now supports USB joystick/gamepad control out of the box when running with Docker.
+
+#### Prerequisites for Joystick
+1. Connect a USB joystick/gamepad to your host computer
+2. Verify the joystick is detected:
+   ```bash
+   ls -l /dev/input/js*
+   ```
+
+#### Using Joystick with Docker
+The Docker container is configured to access USB joystick devices automatically:
+- The `/dev/input` directory is mounted in the container
+- Joystick nodes are launched by default with the simulation
+
+#### Joystick Button Mapping
+Default button mapping (may vary by device):
+- **Left Stick Vertical**: Forward/Backward movement
+- **Left Stick Horizontal**: Turn left/right
+- **L1 Button (Button 4)**: Enable movement (deadman switch - must be held)
+- **R1 Button (Button 5)**: Turbo mode (higher speed)
+
+#### Customizing Joystick Configuration
+Edit the joystick configuration file to customize button mappings:
+```bash
+src/turtlebot_simulation/config/joystick.yaml
+```
+
+#### Disabling Joystick
+To launch without joystick support:
+```bash
+ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py use_joystick:=false
+```
+
+### Keyboard Control
+
+For keyboard control, publish to the keyboard velocity topic in a new terminal:
 ```bash
 source install/setup.bash
-ros2 run turtlebot3_teleop teleop_keyboard
+ros2 run turtlebot3_teleop teleop_keyboard --ros-args --remap /cmd_vel:=/cmd_vel_keyboard
 ```
+
+### Velocity Command Topics
+
+The simulation uses **twist_mux** to manage multiple velocity sources with priorities:
+- `/cmd_vel_joy` - Joystick commands (Priority: 10 - Highest)
+- `/cmd_vel_keyboard` - Keyboard commands (Priority: 5 - Medium)
+- `/cmd_vel_nav` - Navigation commands (Priority: 1 - Lowest)
+- `/cmd_vel` - Final output sent to robot (from twist_mux)
+
+Higher priority sources override lower priority sources when active.
 
 ## Camera Information
 
