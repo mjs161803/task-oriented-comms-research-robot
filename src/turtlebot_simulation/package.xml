@@ -13,6 +13,9 @@
   <exec_depend>gazebo_ros_pkgs</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>
   <exec_depend>turtlebot3_description</exec_depend>
+  <exec_depend>twist_mux</exec_depend>
+  <exec_depend>joy</exec_depend>
+  <exec_depend>teleop_twist_joy</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

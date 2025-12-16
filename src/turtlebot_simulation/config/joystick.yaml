@@ -1,0 +1,34 @@
+# Joystick teleop configuration for TurtleBot3
+# This maps joystick buttons and axes to robot velocity commands
+
+# Typical joystick mappings (may vary by device):
+# axis_linear: Left stick vertical (forward/backward)
+# axis_angular: Left stick horizontal (turn left/right)
+# enable_button: Button to enable movement (deadman switch)
+# enable_turbo_button: Button to enable turbo speed
+#
+# To determine button/axis numbers for your joystick, use:
+#   ros2 run joy joy_enumerate_devices  # List available devices
+#   ros2 topic echo /joy                # See button/axis values when pressed
+
+/**:
+  ros__parameters:
+    axis_linear:
+      x: 1  # Left stick vertical axis
+    scale_linear:
+      x: 0.5  # Maximum linear velocity (m/s)
+    scale_linear_turbo:
+      x: 1.0  # Turbo linear velocity (m/s)
+    
+    axis_angular:
+      yaw: 0  # Left stick horizontal axis
+    scale_angular:
+      yaw: 1.0  # Maximum angular velocity (rad/s)
+    scale_angular_turbo:
+      yaw: 1.5  # Turbo angular velocity (rad/s)
+    
+    enable_button: 4  # Deadman switch (button index may vary by device)
+    enable_turbo_button: 5  # Turbo mode (button index may vary by device)
+    
+    require_enable_button: true
+    inverted_reverse: false

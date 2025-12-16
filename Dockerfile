@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     wget \
     git \
+    ros-humble-twist-mux \
+    ros-humble-joy \
+    ros-humble-teleop-twist-joy \
     && rm -rf /var/lib/apt/lists/*
 
 # Create workspace

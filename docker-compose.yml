@@ -26,6 +26,11 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       # Mount src directory for live code changes
       - ./src:/root/workspace/src:rw
+      # Mount /dev/input for joystick access
+      - /dev/input:/dev/input:ro
+    devices:
+      # Grant access to input devices for joystick
+      - /dev/input:/dev/input
     network_mode: host
     stdin_open: true
     tty: true

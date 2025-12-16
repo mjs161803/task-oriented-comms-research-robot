@@ -22,10 +22,25 @@ def generate_launch_description():
         'turtlebot_blocks.world'
     ])
     
+    # Path to twist_mux config
+    twist_mux_config = PathJoinSubstitution([
+        pkg_turtlebot_simulation,
+        'config',
+        'twist_mux.yaml'
+    ])
+    
+    # Path to joystick config
+    joystick_config = PathJoinSubstitution([
+        pkg_turtlebot_simulation,
+        'config',
+        'joystick.yaml'
+    ])
+    
     # Launch arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     gui = LaunchConfiguration('gui', default='true')
     world = LaunchConfiguration('world', default=world_file)
+    use_joystick = LaunchConfiguration('use_joystick', default='true')
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -43,6 +58,12 @@ def generate_launch_description():
         'world',
         default_value=world_file,
         description='Path to world file'
+    )
+    
+    declare_use_joystick_arg = DeclareLaunchArgument(
+        'use_joystick',
+        default_value='true',
+        description='Set to "true" to enable joystick control'
     )
     
     # Gazebo server
@@ -88,12 +109,46 @@ def generate_launch_description():
         output='screen',
     )
     
+    # twist_mux node - multiplexes velocity commands from multiple sources
+    twist_mux_node = Node(
+        package='twist_mux',
+        executable='twist_mux',
+        parameters=[twist_mux_config, {'use_sim_time': use_sim_time}],
+        remappings=[('/cmd_vel_out', '/cmd_vel')],
+        output='screen'
+    )
+    
+    # Joy node - reads joystick input
+    joy_node = Node(
+        package='joy',
+        executable='joy_node',
+        name='joy_node',
+        parameters=[{'use_sim_time': use_sim_time}],
+        condition=IfCondition(use_joystick),
+        output='screen'
+    )
+    
+    # Teleop twist joy - converts joystick messages to Twist messages
+    teleop_twist_joy_node = Node(
+        package='teleop_twist_joy',
+        executable='teleop_node',
+        name='teleop_twist_joy_node',
+        parameters=[joystick_config, {'use_sim_time': use_sim_time}],
+        remappings=[('/cmd_vel', '/cmd_vel_joy')],
+        condition=IfCondition(use_joystick),
+        output='screen'
+    )
+    
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
         declare_world_arg,
+        declare_use_joystick_arg,
         gzserver,
         gzclient,
-        spawn_turtlebot
+        spawn_turtlebot,
+        twist_mux_node,
+        joy_node,
+        teleop_twist_joy_node
     ])
 
