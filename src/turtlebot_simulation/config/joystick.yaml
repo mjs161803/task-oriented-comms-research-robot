@@ -6,6 +6,10 @@
 # axis_angular: Left stick horizontal (turn left/right)
 # enable_button: Button to enable movement (deadman switch)
 # enable_turbo_button: Button to enable turbo speed
+#
+# To determine button/axis numbers for your joystick, use:
+#   ros2 run joy joy_enumerate_devices  # List available devices
+#   ros2 topic echo /joy                # See button/axis values when pressed
 
 /**:
   ros__parameters:
@@ -23,8 +27,8 @@
     scale_angular_turbo:
       yaw: 1.5  # Turbo angular velocity (rad/s)
     
-    enable_button: 4  # L1 button (deadman switch)
-    enable_turbo_button: 5  # R1 button (turbo mode)
+    enable_button: 4  # Deadman switch (button index may vary by device)
+    enable_turbo_button: 5  # Turbo mode (button index may vary by device)
     
     require_enable_button: true
     inverted_reverse: false

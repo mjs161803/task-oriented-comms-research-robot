@@ -191,8 +191,22 @@ The Docker container is configured to access USB joystick devices automatically:
 Default button mapping (may vary by device):
 - **Left Stick Vertical**: Forward/Backward movement
 - **Left Stick Horizontal**: Turn left/right
-- **L1 Button (Button 4)**: Enable movement (deadman switch - must be held)
-- **R1 Button (Button 5)**: Turbo mode (higher speed)
+- **Button 4**: Enable movement (deadman switch - must be held)
+- **Button 5**: Turbo mode (higher speed)
+
+**Note**: Button and axis numbers vary between joystick models. To determine the correct mappings for your device:
+
+1. List available joystick devices:
+   ```bash
+   ros2 run joy joy_enumerate_devices
+   ```
+
+2. View live joystick data (press buttons/move sticks to see which numbers appear):
+   ```bash
+   ros2 topic echo /joy
+   ```
+
+3. Update the configuration file with the correct button/axis numbers for your device.
 
 #### Customizing Joystick Configuration
 Edit the joystick configuration file to customize button mappings:
