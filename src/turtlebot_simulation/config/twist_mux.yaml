@@ -1,24 +1,16 @@
-# Configuration for twist_mux
-# This allows multiple sources of velocity commands with different priorities
+/**:
+  ros__parameters:
+    topics:
+      joy:
+        topic: cmd_vel_joy
+        timeout: 0.5
+        priority: 10
+      keyboard:
+        topic: cmd_vel_keyboard
+        timeout: 0.5
+        priority: 5
+      navigation:
+        topic: cmd_vel_nav
+        timeout: 0.5
+        priority: 1
 
-topics:
-  # Joystick has highest priority
-  - name: joy
-    topic: cmd_vel_joy
-    timeout: 0.5
-    priority: 10
-
-  # Keyboard teleop has medium priority  
-  - name: keyboard
-    topic: cmd_vel_keyboard
-    timeout: 0.5
-    priority: 5
-
-  # Autonomous navigation or other sources have lower priority
-  - name: navigation
-    topic: cmd_vel_nav
-    timeout: 0.5
-    priority: 1
-
-# Locks can be used to temporarily disable certain sources
-locks: []

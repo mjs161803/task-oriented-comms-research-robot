@@ -21,14 +21,14 @@
       x: 1.0  # Turbo linear velocity (m/s)
     
     axis_angular:
-      yaw: 0  # Left stick horizontal axis
+      yaw: 2  # Left stick horizontal axis
     scale_angular:
       yaw: 1.0  # Maximum angular velocity (rad/s)
     scale_angular_turbo:
       yaw: 1.5  # Turbo angular velocity (rad/s)
     
-    enable_button: 4  # Deadman switch (button index may vary by device)
-    enable_turbo_button: 5  # Turbo mode (button index may vary by device)
+    enable_button: 0  # Deadman switch (button index may vary by device)
+    enable_turbo_button: 1  # Turbo mode (button index may vary by device)
     
     require_enable_button: true
     inverted_reverse: false
