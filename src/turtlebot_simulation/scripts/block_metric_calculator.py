@@ -26,18 +26,15 @@ class BlockMetricCalculator(Node):
             10
         )
         
-        # Create service clients for getting entity states from Gazebo
-        self.get_entity_state_clients = []
-        for _ in self.block_names:
-            client = self.create_client(
-                GetEntityState,
-                '/gazebo/get_entity_state'
-            )
-            self.get_entity_state_clients.append(client)
+        # Create service client for getting entity states from Gazebo
+        self.get_entity_state_client = self.create_client(
+            GetEntityState,
+            '/gazebo/get_entity_state'
+        )
         
         # Wait for the service to be available
         self.get_logger().info('Waiting for /gazebo/get_entity_state service...')
-        while not self.get_entity_state_clients[0].wait_for_service(timeout_sec=1.0):
+        while not self.get_entity_state_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Still waiting for /gazebo/get_entity_state service...')
         
         self.get_logger().info('Service available. Starting metric calculation.')
@@ -63,8 +60,8 @@ class BlockMetricCalculator(Node):
         request.reference_frame = 'world'
         
         try:
-            # Use the first client for synchronous calls
-            future = self.get_entity_state_clients[0].call_async(request)
+            # Use the service client for synchronous calls
+            future = self.get_entity_state_client.call_async(request)
             rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
             
             if future.result() is not None and future.result().success:
@@ -98,13 +95,19 @@ class BlockMetricCalculator(Node):
         """
         # Get positions of all blocks
         positions = []
+        failed_blocks = []
         for block_name in self.block_names:
             pos = self.get_block_position_sync(block_name)
             if pos is not None:
                 positions.append(pos)
+            else:
+                failed_blocks.append(block_name)
         
         # Only publish if we have all block positions
         if len(positions) != len(self.block_names):
+            if self.iteration_count % 100 == 0:  # Log once per second
+                self.get_logger().warn(f'Failed to retrieve positions for: {", ".join(failed_blocks)}')
+            self.iteration_count += 1
             return
         
         # Calculate sum of all pairwise distances
