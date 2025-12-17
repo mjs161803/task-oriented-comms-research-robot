@@ -26,24 +26,31 @@ class BlockMetricCalculator(Node):
             10
         )
         
-        # Create service client for getting entity states from Gazebo
-        self.get_entity_state_client = self.create_client(
-            GetEntityState,
-            '/gazebo/get_entity_state'
-        )
+        # Create service clients for getting entity states from Gazebo
+        self.get_entity_state_clients = []
+        for _ in self.block_names:
+            client = self.create_client(
+                GetEntityState,
+                '/gazebo/get_entity_state'
+            )
+            self.get_entity_state_clients.append(client)
         
         # Wait for the service to be available
-        while not self.get_entity_state_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('Waiting for /gazebo/get_entity_state service...')
+        self.get_logger().info('Waiting for /gazebo/get_entity_state service...')
+        while not self.get_entity_state_clients[0].wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Still waiting for /gazebo/get_entity_state service...')
         
         self.get_logger().info('Service available. Starting metric calculation.')
+        
+        # State variable for tracking iterations
+        self.iteration_count = 0
         
         # Create timer to publish at 100 Hz (0.01 seconds)
         self.timer = self.create_timer(0.01, self.calculate_and_publish_metric)
     
-    def get_block_position(self, block_name):
+    def get_block_position_sync(self, block_name):
         """
-        Get the position of a block from Gazebo.
+        Get the position of a block from Gazebo synchronously.
         
         Args:
             block_name: Name of the block entity in Gazebo
@@ -56,14 +63,14 @@ class BlockMetricCalculator(Node):
         request.reference_frame = 'world'
         
         try:
-            future = self.get_entity_state_client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=0.1)
+            # Use the first client for synchronous calls
+            future = self.get_entity_state_clients[0].call_async(request)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
             
             if future.result() is not None and future.result().success:
                 pos = future.result().state.pose.position
                 return (pos.x, pos.y, pos.z)
             else:
-                self.get_logger().warn(f'Failed to get state for {block_name}')
                 return None
         except Exception as e:
             self.get_logger().error(f'Error getting state for {block_name}: {str(e)}')
@@ -92,12 +99,13 @@ class BlockMetricCalculator(Node):
         # Get positions of all blocks
         positions = []
         for block_name in self.block_names:
-            pos = self.get_block_position(block_name)
+            pos = self.get_block_position_sync(block_name)
             if pos is not None:
                 positions.append(pos)
-            else:
-                # If we can't get position for any block, skip this iteration
-                return
+        
+        # Only publish if we have all block positions
+        if len(positions) != len(self.block_names):
+            return
         
         # Calculate sum of all pairwise distances
         total_distance = 0.0
@@ -114,11 +122,8 @@ class BlockMetricCalculator(Node):
         self.metric_publisher.publish(msg)
         
         # Log occasionally (every 100 iterations = every 1 second at 100 Hz)
-        if not hasattr(self, '_iteration_count'):
-            self._iteration_count = 0
-        self._iteration_count += 1
-        
-        if self._iteration_count % 100 == 0:
+        self.iteration_count += 1
+        if self.iteration_count % 100 == 0:
             self.get_logger().info(f'Block distance metric: {total_distance:.4f}')
 
 
