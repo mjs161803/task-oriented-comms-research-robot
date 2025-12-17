@@ -139,6 +139,15 @@ def generate_launch_description():
         output='screen'
     )
     
+    # Block metric calculator node - computes sum of pairwise distances
+    # Note: This node queries Gazebo via /gazebo/get_entity_state service
+    block_metric_calculator = Node(
+        package='turtlebot_simulation',
+        executable='block_metric_calculator.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+    
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
@@ -149,6 +158,7 @@ def generate_launch_description():
         spawn_turtlebot,
         twist_mux_node,
         joy_node,
-        teleop_twist_joy_node
+        teleop_twist_joy_node,
+        block_metric_calculator
     ])
 
