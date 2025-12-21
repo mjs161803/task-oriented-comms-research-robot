@@ -2,6 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.callback_groups import ReentrantCallbackGroup
 from gazebo_msgs.srv import GetEntityState
 from std_msgs.msg import Float64
 import math
@@ -18,6 +19,9 @@ class BlockMetricCalculator(Node):
 
     def __init__(self):
         super().__init__('block_metric_calculator')
+        
+        # Create a Reentrant Callback Group to allow concurrent callback execution
+        self.callback_group = ReentrantCallbackGroup()
         
         # Block names in the simulation
         self.block_names = ['block_1', 'block_2', 'block_3', 'block_4']
@@ -39,11 +43,19 @@ class BlockMetricCalculator(Node):
         
         self.get_logger().info('Initialized. Resolving Gazebo GetEntityState service...')
         
-        # State variable for tracking iterations
+        # State tracking for asynchronous operations
         self.iteration_count = 0
+        self.pending_futures = {}  # Maps block_name -> future
+        self.block_positions = {}   # Maps block_name -> (x, y, z) or None
+        self.request_in_flight = {} # Tracks if a request is currently in flight for a block
         
-        # Create timer to publish at 100 Hz (0.01 seconds)
-        self.timer = self.create_timer(0.01, self.calculate_and_publish_metric)
+        # Create timer to trigger metric calculation at 100 Hz (0.01 seconds)
+        # Assign to callback group to allow concurrent execution
+        self.timer = self.create_timer(
+            0.01, 
+            self.calculate_and_publish_metric,
+            callback_group=self.callback_group
+        )
 
     def resolve_service_name(self):
         """
@@ -70,7 +82,12 @@ class BlockMetricCalculator(Node):
 
         if self.service_name != chosen:
             self.service_name = chosen
-            self.get_entity_state_client = self.create_client(GetEntityState, self.service_name)
+            # Create client with reentrant callback group for async operations
+            self.get_entity_state_client = self.create_client(
+                GetEntityState, 
+                self.service_name,
+                callback_group=self.callback_group
+            )
             self.service_available = False
             self.get_logger().info(f"Using service '{self.service_name}' for GetEntityState")
 
@@ -109,41 +126,69 @@ class BlockMetricCalculator(Node):
         
         return False
     
-    def get_block_position_sync(self, block_name):
+    def request_block_position_async(self, block_name):
         """
-        Get the position of a block from Gazebo synchronously.
+        Asynchronously request the position of a block from Gazebo.
+        Uses a done callback to handle the response without blocking.
         
         Args:
             block_name: Name of the block entity in Gazebo
-            
-        Returns:
-            tuple: (x, y, z) position or None if failed
         """
+        if block_name in self.request_in_flight and self.pending_futures[block_name] and not self.pending_futures[block_name].done():
+            # Request already in flight for this block
+            return
+        
         request = GetEntityState.Request()
         request.name = block_name
         request.reference_frame = 'world'
         
         try:
-            # Use the service client for synchronous calls
+            # Mark that a request is in flight
+            self.request_in_flight[block_name] = True
+            
+            # Initiate async call with callback
             future = self.get_entity_state_client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=1.0)
+            self.pending_futures[block_name] = future
             
-            if future.result() is None:
-                self.get_logger().debug(f'Service call for {block_name} returned None (timeout or no response)')
-                return None
+            # Add callback to handle the response
+            future.add_done_callback(
+                lambda f: self._on_block_position_response(block_name, f)
+            )
             
-            result = future.result()
-            if not result.success:
-                self.get_logger().debug(f'Service call for {block_name} succeeded=False. Response: {result}')
-                return None
-            
-            pos = result.state.pose.position
-            return (pos.x, pos.y, pos.z)
         except Exception as e:
-            self.get_logger().error(f'Exception getting state for {block_name}: {type(e).__name__}: {str(e)}')
-            import traceback
-            self.get_logger().error(f'Traceback: {traceback.format_exc()}')
-            return None
+            self.get_logger().error(f'Exception initiating call for {block_name}: {type(e).__name__}: {str(e)}')
+            self.request_in_flight[block_name] = False
+    
+    def _on_block_position_response(self, block_name, future):
+        """
+        Callback invoked when a block position service response is received.
+        Runs in the context of the callback group.
+        
+        Args:
+            block_name: Name of the block entity
+            future: The completed future object
+        """
+        try:
+            result = future.result()
+            
+            if result is None:
+                self.get_logger().debug(f'Service call for {block_name} returned None')
+                self.block_positions[block_name] = None
+            elif not result.success:
+                self.get_logger().debug(f'Service call for {block_name} succeeded=False')
+                self.block_positions[block_name] = None
+            else:
+                # Extract position
+                pos = result.state.pose.position
+                self.block_positions[block_name] = (pos.x, pos.y, pos.z)
+            
+        except Exception as e:
+            self.get_logger().error(f'Exception in response callback for {block_name}: {type(e).__name__}: {str(e)}')
+            self.block_positions[block_name] = None
+        
+        finally:
+            # Mark request as no longer in flight
+            self.request_in_flight[block_name] = False
     
     def calculate_pairwise_distance(self, pos1, pos2):
         """
@@ -163,17 +208,34 @@ class BlockMetricCalculator(Node):
     
     def calculate_and_publish_metric(self):
         """
-        Calculate sum of all pairwise distances between blocks and publish it.
+        Main timer callback. Initiates async requests for block positions,
+        collects results, calculates pairwise distances, and publishes the metric.
         """
         # Check if service is available (non-blocking)
         if not self.ensure_service_available():
             return
         
-        # Get positions of all blocks
+        # Initiate async requests for all blocks that don't have one in flight
+        for block_name in self.block_names:
+            self.request_block_position_async(block_name)
+        
+        # Check if all requests have completed
+        all_responses_received = all(
+            block_name in self.pending_futures and 
+            self.pending_futures[block_name].done()
+            for block_name in self.block_names
+        )
+        
+        if not all_responses_received:
+            # Still waiting for some responses, return and try again next iteration
+            self.iteration_count += 1
+            return
+        
+        # Collect all positions from callbacks
         positions = []
         failed_blocks = []
         for block_name in self.block_names:
-            pos = self.get_block_position_sync(block_name)
+            pos = self.block_positions.get(block_name)
             if pos is not None:
                 positions.append(pos)
             else:
@@ -181,9 +243,11 @@ class BlockMetricCalculator(Node):
         
         # Only publish if we have all block positions
         if len(positions) != len(self.block_names):
-            if self.iteration_count % 100 == 0:  # Log once per second
+            if self.iteration_count % 100 == 0:  # Log once per second at 100 Hz
                 self.get_logger().warn(f'Failed to retrieve positions for: {", ".join(failed_blocks)}')
             self.iteration_count += 1
+            # Clear pending futures to retry in next cycle
+            self.pending_futures.clear()
             return
         
         # Calculate sum of all pairwise distances
@@ -204,6 +268,9 @@ class BlockMetricCalculator(Node):
         self.iteration_count += 1
         if self.iteration_count % 100 == 0:
             self.get_logger().info(f'Block distance metric: {total_distance:.4f}')
+        
+        # Clear futures for next cycle
+        self.pending_futures.clear()
 
 
 def main(args=None):
@@ -211,12 +278,15 @@ def main(args=None):
     node = BlockMetricCalculator()
 
     try:
-        rclpy.spin(node)
+        executor = rclpy.executors.MultiThreadedExecutor()
+        executor.add_node(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
