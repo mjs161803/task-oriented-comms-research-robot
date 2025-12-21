@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     wget \
     git \
+    ros-humble-gazebo-ros-pkgs \
+    ros-humble-gazebo-msgs \
+    ros-humble-gazebo-plugins \
     ros-humble-twist-mux \
     ros-humble-joy \
     ros-humble-teleop-twist-joy \
@@ -26,6 +29,10 @@ COPY src ./src
 # Build the workspace
 RUN . /opt/ros/humble/setup.sh && \
     colcon build --symlink-install
+
+# Configure .bashrc to source ROS and workspace setup in interactive shells
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+    echo "if [ -f /root/workspace/install/setup.bash ]; then source /root/workspace/install/setup.bash; fi" >> /root/.bashrc
 
 # Setup entrypoint
 COPY docker/ros_entrypoint.sh /ros_entrypoint.sh

@@ -296,3 +296,27 @@ task-oriented-comms-research-robot/
   colcon build
   source install/setup.bash
   ```
+
+## Gazebo GetEntity Service
+
+The Docker image installs Gazebo ROS packages that provide the ROS2 API plugin for Gazebo, including support for `gazebo_msgs` services related to entities (e.g., `GetEntityState`).
+
+### Verify inside the container
+
+1. Build the image:
+   ```bash
+   docker compose build
+   ```
+2. Start the container and launch the sim:
+   ```bash
+   docker compose up -d
+   docker compose exec ros2-simulation bash
+   ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
+   ```
+3. Check available interfaces/services:
+   ```bash
+   ros2 interface show gazebo_msgs/srv/GetEntityState
+   ros2 service list | grep -i entity
+   ```
+
+Note: The plugin must be loaded at runtime by Gazebo (typically via your launch/world). This repo ensures the plugin libraries are installed in the image; loading is controlled by the launch/world configuration.
