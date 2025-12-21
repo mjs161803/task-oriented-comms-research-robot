@@ -29,23 +29,52 @@ class BlockMetricCalculator(Node):
             10
         )
         
-        # Create service client for getting entity states from Gazebo
-        self.get_entity_state_client = self.create_client(
-            GetEntityState,
-            '/gazebo/get_entity_state'
-        )
+        # Service discovery and client (created lazily once resolved)
+        self.service_name = None
+        self.get_entity_state_client = None
         
         # Track service availability
         self.service_available = False
         self.service_check_count = 0
         
-        self.get_logger().info('Initialized. Waiting for /gazebo/get_entity_state service...')
+        self.get_logger().info('Initialized. Resolving Gazebo GetEntityState service...')
         
         # State variable for tracking iterations
         self.iteration_count = 0
         
         # Create timer to publish at 100 Hz (0.01 seconds)
         self.timer = self.create_timer(0.01, self.calculate_and_publish_metric)
+
+    def resolve_service_name(self):
+        """
+        Discover the correct GetEntityState service name exposed by Gazebo.
+        Tries to find any service ending with 'get_entity_state' of type gazebo_msgs/srv/GetEntityState.
+        Prefers '/gazebo/get_entity_state' when available.
+        """
+        names_and_types = self.get_service_names_and_types()
+        candidates = []
+        for name, types in names_and_types:
+            # Match by suffix to handle namespaced setups
+            if name.endswith('get_entity_state'):
+                for t in types:
+                    if 'gazebo_msgs/srv/GetEntityState' in t:
+                        candidates.append(name)
+                        break
+
+        if not candidates:
+            return False
+
+        # Prefer '/gazebo/get_entity_state' if present
+        candidates.sort(key=lambda n: (0 if n.startswith('/gazebo/') else 1, len(n)))
+        chosen = candidates[0]
+
+        if self.service_name != chosen:
+            self.service_name = chosen
+            self.get_entity_state_client = self.create_client(GetEntityState, self.service_name)
+            self.service_available = False
+            self.get_logger().info(f"Using service '{self.service_name}' for GetEntityState")
+
+        return True
     
     def ensure_service_available(self):
         """
@@ -55,15 +84,27 @@ class BlockMetricCalculator(Node):
         if self.service_available:
             return True
         
-        # Check if service is ready
+        # Resolve service name and create client if needed
+        if self.get_entity_state_client is None:
+            self.resolve_service_name()
+
+        # If still no client, keep retrying
+        if self.get_entity_state_client is None:
+            if self.service_check_count % 100 == 0:
+                self.get_logger().warn("GetEntityState service not found yet. Retrying discovery...")
+            self.service_check_count += 1
+            return False
+
+        # Check if service is ready (non-blocking)
         if self.get_entity_state_client.wait_for_service(timeout_sec=0.0):
             self.service_available = True
-            self.get_logger().info('✓ /gazebo/get_entity_state service is now available!')
+            self.get_logger().info(f"✓ {self.service_name} is now available!")
             return True
         
         # Log progress every 100 iterations (~1 second at 100 Hz)
         if self.service_check_count % 100 == 0:
-            self.get_logger().warn('Service /gazebo/get_entity_state not yet available. Retrying...')
+            svc = self.service_name or '<resolving>'
+            self.get_logger().warn(f"Service {svc} not yet available. Retrying...")
         self.service_check_count += 1
         
         return False
@@ -85,15 +126,23 @@ class BlockMetricCalculator(Node):
         try:
             # Use the service client for synchronous calls
             future = self.get_entity_state_client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=1.0)
             
-            if future.result() is not None and future.result().success:
-                pos = future.result().state.pose.position
-                return (pos.x, pos.y, pos.z)
-            else:
+            if future.result() is None:
+                self.get_logger().debug(f'Service call for {block_name} returned None (timeout or no response)')
                 return None
+            
+            result = future.result()
+            if not result.success:
+                self.get_logger().debug(f'Service call for {block_name} succeeded=False. Response: {result}')
+                return None
+            
+            pos = result.state.pose.position
+            return (pos.x, pos.y, pos.z)
         except Exception as e:
-            self.get_logger().error(f'Error getting state for {block_name}: {str(e)}')
+            self.get_logger().error(f'Exception getting state for {block_name}: {type(e).__name__}: {str(e)}')
+            import traceback
+            self.get_logger().error(f'Traceback: {traceback.format_exc()}')
             return None
     
     def calculate_pairwise_distance(self, pos1, pos2):
@@ -160,7 +209,7 @@ class BlockMetricCalculator(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = BlockMetricCalculator()
-    
+
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

@@ -2,6 +2,16 @@
 <sdf version="1.6">
   <world name="turtlebot_world">
     
+    <!-- Gazebo ROS State Plugin - Provides get/set_entity_state services -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+        <remapping>get_entity_state:=get_entity_state</remapping>
+        <remapping>set_entity_state:=set_entity_state</remapping>
+      </ros>
+      <update_rate>100.0</update_rate>
+    </plugin>
+    
     <!-- A global light source -->
     <include>
       <uri>model://sun</uri>
