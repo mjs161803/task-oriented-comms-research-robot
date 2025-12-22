@@ -18,7 +18,7 @@ install(DIRECTORY
 
 # Install scripts
 install(PROGRAMS
-  scripts/block_metric_calculator.py
+  scripts/block_observer.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
