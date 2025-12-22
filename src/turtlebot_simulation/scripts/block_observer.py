@@ -144,7 +144,8 @@ class BlockObserver(Node):
         Args:
             block_name: Name of the block entity in Gazebo
         """
-        if block_name in self.request_in_flight and self.pending_futures.get(block_name) and not self.pending_futures[block_name].done():
+        future = self.pending_futures.get(block_name)
+        if block_name in self.request_in_flight and future is not None and not future.done():
             # Request already in flight for this block
             return
         
@@ -231,11 +232,12 @@ class BlockObserver(Node):
             self.request_block_position_async(block_name)
         
         # Check if all requests have completed
-        all_responses_received = all(
-            block_name in self.pending_futures and 
-            self.pending_futures[block_name].done()
-            for block_name in self.block_names
-        )
+        all_responses_received = True
+        for block_name in self.block_names:
+            future = self.pending_futures.get(block_name)
+            if future is None or not future.done():
+                all_responses_received = False
+                break
         
         if not all_responses_received:
             # Still waiting for some responses, return and try again next iteration
