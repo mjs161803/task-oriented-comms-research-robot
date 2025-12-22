@@ -145,7 +145,7 @@ class BlockObserver(Node):
             block_name: Name of the block entity in Gazebo
         """
         future = self.pending_futures.get(block_name)
-        if block_name in self.request_in_flight and future is not None and not future.done():
+        if self.request_in_flight.get(block_name, False) and future is not None and not future.done():
             # Request already in flight for this block
             return
         
