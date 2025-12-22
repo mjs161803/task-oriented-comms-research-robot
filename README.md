@@ -258,7 +258,7 @@ ros2 topic list | grep camera
 ## World Description
 The simulation world includes:
 - Ground plane
-- Four colored blocks (0.5m x 0.5m x 0.5m) positioned around the TurtleBot
+- Four colored blocks (0.075m x 0.075m x 0.075m, or 75mm x 75mm x 75mm) positioned around the TurtleBot
   - Red block at (1.0, 0.5)
   - Green block at (-1.0, 1.0)
   - Blue block at (0.5, -1.5)

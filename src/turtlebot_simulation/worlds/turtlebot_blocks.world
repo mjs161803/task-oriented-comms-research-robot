@@ -24,12 +24,12 @@
 
     <!-- Block 1 - Red -->
     <model name="block_1">
-      <pose>1.0 0.5 0.25 0 0 0</pose>
+      <pose>1.0 0.5 0.0375 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <surface>
@@ -44,7 +44,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <material>
@@ -69,12 +69,12 @@
 
     <!-- Block 2 - Green -->
     <model name="block_2">
-      <pose>-1.0 1.0 0.25 0 0 0</pose>
+      <pose>-1.0 1.0 0.0375 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <surface>
@@ -89,7 +89,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <material>
@@ -114,12 +114,12 @@
 
     <!-- Block 3 - Blue -->
     <model name="block_3">
-      <pose>0.5 -1.5 0.25 0 0 0</pose>
+      <pose>0.5 -1.5 0.0375 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <surface>
@@ -134,7 +134,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <material>
@@ -159,12 +159,12 @@
 
     <!-- Block 4 - Yellow -->
     <model name="block_4">
-      <pose>-1.5 -0.5 0.25 0 0 0</pose>
+      <pose>-1.5 -0.5 0.0375 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <surface>
@@ -179,7 +179,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.5 0.5 0.5</size>
+              <size>0.075 0.075 0.075</size>
             </box>
           </geometry>
           <material>
