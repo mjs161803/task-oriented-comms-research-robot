@@ -6,6 +6,8 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from gazebo_msgs.srv import GetEntityState
 from std_msgs.msg import Float64
 import math
+import threading
+import time
 
 
 class BlockObserver(Node):
@@ -53,11 +55,13 @@ class BlockObserver(Node):
         
         self.get_logger().info('BlockObserver initialized. Resolving Gazebo GetEntityState service...')
         
-        # State tracking for asynchronous operations
+        # State tracking for asynchronous operations (protected by lock)
+        self._state_lock = threading.RLock()  # Reentrant lock for nested access
         self.iteration_count = 0
-        self.pending_futures = {}  # Maps block_name -> future
         self.block_positions = {}   # Maps block_name -> (x, y, z) or None
         self.request_in_flight = {} # Tracks if a request is currently in flight for a block
+        
+        self.request_timeout_sec = 2.0  # Timeout for individual service calls
         
         # Create timer to trigger observation at 30 Hz (1/30 = 0.0333... seconds)
         # Assign to callback group to allow concurrent execution with service calls
@@ -111,22 +115,28 @@ class BlockObserver(Node):
         if self.service_available:
             return True
         
+        self.get_logger().debug('Service check: service_available is False')
+        
         # Resolve service name and create client if needed
         if self.get_entity_state_client is None:
-            self.resolve_service_name()
+            self.get_logger().debug('Service check: client is None, resolving')
+            if not self.resolve_service_name():
+                # Service not resolved yet
+                if self.service_check_count % 30 == 0:  # Log once per second at 30 Hz
+                    self.get_logger().warn("GetEntityState service not found yet. Retrying discovery...")
+                self.service_check_count += 1
+                return False
 
-        # If still no client, keep retrying
-        if self.get_entity_state_client is None:
-            if self.service_check_count % 30 == 0:  # Log once per second at 30 Hz
-                self.get_logger().warn("GetEntityState service not found yet. Retrying discovery...")
-            self.service_check_count += 1
+        # Check if service is ready (non-blocking with 0 timeout)
+        self.get_logger().debug('Service check: checking if service is ready')
+        try:
+            if self.get_entity_state_client.wait_for_service(timeout_sec=0.0):
+                self.service_available = True
+                self.get_logger().info(f"✓ {self.service_name} is now available!")
+                return True
+        except Exception as e:
+            self.get_logger().warn(f"Error checking service availability: {e}")
             return False
-
-        # Check if service is ready (non-blocking)
-        if self.get_entity_state_client.wait_for_service(timeout_sec=0.0):
-            self.service_available = True
-            self.get_logger().info(f"✓ {self.service_name} is now available!")
-            return True
         
         # Log progress every 30 iterations (~1 second at 30 Hz)
         if self.service_check_count % 30 == 0:
@@ -139,27 +149,26 @@ class BlockObserver(Node):
     def request_block_position_async(self, block_name):
         """
         Asynchronously request the position of a block from Gazebo.
-        Uses a done callback to handle the response without blocking.
+        Must be called from within the lock.
         
         Args:
             block_name: Name of the block entity in Gazebo
         """
-        future = self.pending_futures.get(block_name)
-        if self.request_in_flight.get(block_name, False) and future is not None and not future.done():
-            # Request already in flight for this block
+        # Skip if already requesting this block
+        if self.request_in_flight.get(block_name, False):
             return
         
+        # Mark that a request is in flight
+        self.request_in_flight[block_name] = True
+        
+        # Release lock and initiate request (will be re-acquired by caller)
         request = GetEntityState.Request()
         request.name = block_name
         request.reference_frame = 'world'
         
         try:
-            # Mark that a request is in flight
-            self.request_in_flight[block_name] = True
-            
             # Initiate async call with callback
             future = self.get_entity_state_client.call_async(request)
-            self.pending_futures[block_name] = future
             
             # Add callback to handle the response
             future.add_done_callback(
@@ -169,6 +178,7 @@ class BlockObserver(Node):
         except Exception as e:
             self.get_logger().error(f'Exception initiating call for {block_name}: {type(e).__name__}: {str(e)}')
             self.request_in_flight[block_name] = False
+            self.block_positions[block_name] = None
     
     def _on_block_position_response(self, block_name, future):
         """
@@ -182,23 +192,19 @@ class BlockObserver(Node):
         try:
             result = future.result()
             
-            if result is None:
-                self.get_logger().debug(f'Service call for {block_name} returned None')
-                self.block_positions[block_name] = None
-            elif not result.success:
-                self.get_logger().debug(f'Service call for {block_name} succeeded=False')
-                self.block_positions[block_name] = None
-            else:
+            position = None
+            if result is not None and result.success:
                 # Extract position
                 pos = result.state.pose.position
-                self.block_positions[block_name] = (pos.x, pos.y, pos.z)
+                position = (pos.x, pos.y, pos.z)
             
         except Exception as e:
             self.get_logger().error(f'Exception in response callback for {block_name}: {type(e).__name__}: {str(e)}')
-            self.block_positions[block_name] = None
+            position = None
         
-        finally:
-            # Mark request as no longer in flight
+        # Update shared state under lock
+        with self._state_lock:
+            self.block_positions[block_name] = position
             self.request_in_flight[block_name] = False
     
     def calculate_pairwise_distance(self, pos1, pos2):
@@ -227,63 +233,54 @@ class BlockObserver(Node):
         if not self.ensure_service_available():
             return
         
-        # Initiate async requests for all blocks that don't have one in flight
-        for block_name in self.block_names:
-            self.request_block_position_async(block_name)
+        # Log first time service becomes available
+        if not hasattr(self, '_first_publish_logged'):
+            self.get_logger().info('Service available, starting block observation...')
+            self._first_publish_logged = True
         
-        # Check if all requests have completed
-        all_responses_received = True
-        for block_name in self.block_names:
-            future = self.pending_futures.get(block_name)
-            if future is None or not future.done():
-                all_responses_received = False
-                break
+        try:
+            # Initiate async requests - keep lock time minimal
+            with self._state_lock:
+                # Initiate async requests for all blocks that don't have one in flight
+                for block_name in self.block_names:
+                    self.request_block_position_async(block_name)
+                
+                # Collect currently available positions (don't wait)
+                positions = []
+                failed_blocks = []
+                for block_name in self.block_names:
+                    pos = self.block_positions.get(block_name)
+                    if pos is not None:
+                        positions.append(pos)
+                    else:
+                        failed_blocks.append(block_name)
+            
+            # Only publish if we have all block positions
+            if len(positions) != len(self.block_names):
+                self.iteration_count += 1
+                return
+            
+            # Calculate sum of all pairwise distances (6 pairs for 4 blocks)
+            total_distance = 0.0
+            num_blocks = len(positions)
+            
+            for i in range(num_blocks):
+                for j in range(i + 1, num_blocks):
+                    distance = self.calculate_pairwise_distance(positions[i], positions[j])
+                    total_distance += distance
+            
+            # Publish the sum of pairwise distances
+            msg = Float64()
+            msg.data = total_distance
+            self.distances_publisher.publish(msg)
+            
+            # # Log occasionally (every 30 iterations = every 1 second at 30 Hz)
+            # self.iteration_count += 1
+            # if self.iteration_count % 30 == 0:
+            #     self.get_logger().info(f'Block distances sum: {total_distance:.4f}')
         
-        if not all_responses_received:
-            # Still waiting for some responses, return and try again next iteration
-            self.iteration_count += 1
-            return
-        
-        # Collect all positions from callbacks
-        positions = []
-        failed_blocks = []
-        for block_name in self.block_names:
-            pos = self.block_positions.get(block_name)
-            if pos is not None:
-                positions.append(pos)
-            else:
-                failed_blocks.append(block_name)
-        
-        # Only publish if we have all block positions
-        if len(positions) != len(self.block_names):
-            if self.iteration_count % 30 == 0:  # Log once per second at 30 Hz
-                self.get_logger().warn(f'Failed to retrieve positions for: {", ".join(failed_blocks)}')
-            self.iteration_count += 1
-            # Clear pending futures to retry in next cycle
-            self.pending_futures.clear()
-            return
-        
-        # Calculate sum of all pairwise distances (6 pairs for 4 blocks)
-        total_distance = 0.0
-        num_blocks = len(positions)
-        
-        for i in range(num_blocks):
-            for j in range(i + 1, num_blocks):
-                distance = self.calculate_pairwise_distance(positions[i], positions[j])
-                total_distance += distance
-        
-        # Publish the sum of pairwise distances
-        msg = Float64()
-        msg.data = total_distance
-        self.distances_publisher.publish(msg)
-        
-        # Log occasionally (every 30 iterations = every 1 second at 30 Hz)
-        self.iteration_count += 1
-        if self.iteration_count % 30 == 0:
-            self.get_logger().info(f'Block distances sum: {total_distance:.4f}')
-        
-        # Clear futures for next cycle
-        self.pending_futures.clear()
+        except Exception as e:
+            self.get_logger().error(f'Exception in observe_and_publish: {type(e).__name__}: {str(e)}', exc_info=True)
 
 
 def main(args=None):
