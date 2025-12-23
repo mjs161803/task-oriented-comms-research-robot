@@ -41,6 +41,7 @@ class EpisodeManager(Node):
         self.is_running = False
         self.waiting_for_reset = False
         self.reset_wait_start = None
+        self.should_shutdown = False  # Flag for clean shutdown
         
         # Subscribe to block distances
         self.score_subscriber = self.create_subscription(
@@ -109,6 +110,10 @@ class EpisodeManager(Node):
     
     def check_episode_timer(self):
         """Timer callback to check if episode should end or if waiting after reset."""
+        # Check if shutdown was requested
+        if self.should_shutdown:
+            raise SystemExit  # This will trigger clean shutdown in the main function
+        
         # Check if we're waiting after a reset
         if self.waiting_for_reset:
             elapsed_wait = time.time() - self.reset_wait_start
@@ -146,8 +151,8 @@ class EpisodeManager(Node):
             self.get_logger().info(f'Scores saved to: {self.output_file}')
             self.get_logger().info('=' * 60)
             self.get_logger().info('Shutting down...')
-            # Shutdown the node and ROS
-            rclpy.shutdown()
+            # Set flag to trigger shutdown from main thread
+            self.should_shutdown = True
         else:
             # Reset simulation and start next episode
             self.reset_simulation()
