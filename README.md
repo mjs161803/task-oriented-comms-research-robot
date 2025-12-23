@@ -144,6 +144,8 @@ source install/setup.bash
 
 ## Running the Simulation
 
+### Standard Simulation Mode
+
 Launch the Gazebo simulation with TurtleBot3 and blocks:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
@@ -165,6 +167,52 @@ You can customize the launch with these arguments:
 Example:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py gui:=false
+```
+
+### Episodic Simulation Mode
+
+For automated testing and data collection, you can run the simulation in episodic mode. This will:
+- Run the simulation for a specified number of episodes
+- Each episode runs for 60 seconds (configurable)
+- At the end of each episode, the latest score from the `/block_distances` topic is stored to a file
+- The simulation automatically resets between episodes
+- After all episodes complete, the system shuts down automatically
+
+Launch the episodic simulation:
+```bash
+ros2 launch turtlebot_simulation episodic_simulation.launch.py
+```
+
+#### Episodic Launch Arguments
+
+- `num_episodes:=N` - Number of episodes to run (default: 10)
+- `episode_duration:=SECONDS` - Duration of each episode in seconds (default: 60.0)
+- `output_file:=PATH` - Path to output file for storing episode scores (default: episode_scores.txt)
+- `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
+- `use_joystick:=true/false` - Enable joystick control (default: false for episodic mode)
+
+Examples:
+```bash
+# Run 20 episodes with default settings
+ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=20
+
+# Run 5 episodes of 30 seconds each without GUI
+ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=5 episode_duration:=30.0 gui:=false
+
+# Custom output file
+ros2 launch turtlebot_simulation episodic_simulation.launch.py output_file:=/tmp/my_scores.txt
+```
+
+The output file will contain one score per episode in CSV format:
+```
+# Episode Scores - Generated at 2024-12-23T12:00:00.000000
+# Total episodes: 10
+# Episode duration: 60.0 seconds
+# Format: episode_number,score
+1,15.234567
+2,14.876543
+3,16.123456
+...
 ```
 
 ## Controlling the TurtleBot
