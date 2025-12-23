@@ -39,6 +39,8 @@ class EpisodeManager(Node):
         self.latest_score = None
         self.episode_start_time = None
         self.is_running = False
+        self.waiting_for_reset = False
+        self.reset_wait_start = None
         
         # Subscribe to block distances
         self.score_subscriber = self.create_subscription(
@@ -106,7 +108,15 @@ class EpisodeManager(Node):
         self.get_logger().info(f'=' * 60)
     
     def check_episode_timer(self):
-        """Timer callback to check if episode should end."""
+        """Timer callback to check if episode should end or if waiting after reset."""
+        # Check if we're waiting after a reset
+        if self.waiting_for_reset:
+            elapsed_wait = time.time() - self.reset_wait_start
+            if elapsed_wait >= 1.0:  # Wait 1 second after reset
+                self.waiting_for_reset = False
+                self.start_episode()
+            return
+        
         if not self.is_running:
             return
         
@@ -135,10 +145,8 @@ class EpisodeManager(Node):
             self.get_logger().info(f'All {self.num_episodes} episodes completed!')
             self.get_logger().info(f'Scores saved to: {self.output_file}')
             self.get_logger().info('=' * 60)
-            # Give time for log messages to be printed
-            time.sleep(1.0)
-            # Shutdown the node and ROS
             self.get_logger().info('Shutting down...')
+            # Shutdown the node and ROS
             rclpy.shutdown()
         else:
             # Reset simulation and start next episode
@@ -169,15 +177,12 @@ class EpisodeManager(Node):
         try:
             response = future.result()
             self.get_logger().info('Simulation reset successful')
-            # Wait a bit for simulation to stabilize after reset
-            time.sleep(1.0)
-            # Start next episode
-            self.start_episode()
         except Exception as e:
             self.get_logger().error(f'Failed to reset simulation: {e}')
-            # Try to continue anyway
-            time.sleep(1.0)
-            self.start_episode()
+        
+        # Set state to wait for simulation to stabilize
+        self.waiting_for_reset = True
+        self.reset_wait_start = time.time()
 
 
 def main(args=None):
