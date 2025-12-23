@@ -15,7 +15,7 @@ class EpisodeManager(Node):
     
     This node:
     - Subscribes to /block_distances topic to track the latest score
-    - Runs the simulation for 60 seconds per episode
+    - Runs the simulation for a configurable duration per episode (default: 60 seconds)
     - Stores the final score to a file at the end of each episode
     - Resets the simulation between episodes using Gazebo reset service
     - Shuts down after a configured number of episodes
@@ -46,7 +46,7 @@ class EpisodeManager(Node):
         # Subscribe to block distances
         self.score_subscriber = self.create_subscription(
             Float64,
-            'block_distances',
+            '/block_distances',
             self.score_callback,
             10
         )

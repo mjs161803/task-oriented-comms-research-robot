@@ -17,7 +17,7 @@ def generate_launch_description():
     - Launches the existing turtlebot_gazebo simulation
     - Launches an episode manager node to control simulation episodes
     - Runs the simulation for a configurable number of episodes
-    - Each episode runs for 60 seconds
+    - Each episode runs for a configurable duration (default: 60 seconds)
     - Scores are stored to a file after each episode
     """
     
