@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-turtlebot4-msgs \
     ros-jazzy-ros-gz-sim \
     ros-jazzy-ros-gz-bridge \
+    ros-jazzy-ros-gz-interfaces \
     ros-jazzy-twist-mux \
     ros-jazzy-joy \
     ros-jazzy-teleop-twist-joy \
