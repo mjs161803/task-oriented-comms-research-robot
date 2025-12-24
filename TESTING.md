@@ -4,6 +4,10 @@
 - ROS2 Jazzy environment (either Docker container or native installation)
 - All dependencies installed (see README.md)
 
+## Testing with TurtleBot4 (Recommended)
+
+The repository now uses TurtleBot4 with OAK-D-Pro RGBD camera by default.
+
 ## Building the Package
 
 ```bash
@@ -13,16 +17,45 @@ colcon build --packages-select turtlebot_simulation
 source install/setup.bash
 ```
 
-## Testing Scenarios
+## Testing Scenarios - TurtleBot4
 
-### 1. Basic Episodic Simulation (Default Settings)
+### 1. Basic Simulation (TurtleBot4)
 ```bash
-ros2 launch turtlebot_simulation episodic_simulation.launch.py
+ros2 launch turtlebot_simulation turtlebot4_gazebo.launch.py
 ```
 
 **Expected Behavior:**
 - Gazebo launches with GUI
-- TurtleBot and 4 colored blocks appear
+- TurtleBot4 robot appears with docking station
+- 4 colored blocks appear around the robot
+- OAK-D-Pro camera publishes RGBD data
+- Console shows no errors
+
+**Validation:**
+```bash
+# Check robot spawned
+ros2 node list | grep -i turtlebot
+
+# Check camera topics at 640x480
+ros2 topic echo /oakd/rgb/preview/camera_info --once | grep -E "width|height"
+
+# Verify RGBD topics exist
+ros2 topic list | grep oakd
+# Should show:
+# /oakd/rgb/preview/image_raw
+# /oakd/rgb/preview/depth
+# /oakd/rgb/preview/depth/points
+# /oakd/rgb/preview/camera_info
+```
+
+### 2. Basic Episodic Simulation (TurtleBot4 - Default Settings)
+```bash
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py
+```
+
+**Expected Behavior:**
+- Gazebo launches with GUI
+- TurtleBot4 and 4 colored blocks appear
 - Simulation runs for 10 episodes, 60 seconds each
 - Console logs show episode progress
 - After 10 episodes, system shuts down automatically
@@ -44,18 +77,18 @@ cat episode_scores.txt
 # 10,<score_value>
 ```
 
-### 2. Custom Number of Episodes
+### 3. Custom Number of Episodes (TurtleBot4)
 ```bash
-ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=3
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py num_episodes:=3
 ```
 
 **Expected Behavior:**
 - Runs for 3 episodes only
 - Output file contains 3 score entries
 
-### 3. Custom Episode Duration
+### 4. Custom Episode Duration (TurtleBot4)
 ```bash
-ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=2 episode_duration:=30.0
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py num_episodes:=2 episode_duration:=30.0
 ```
 
 **Expected Behavior:**
@@ -63,9 +96,9 @@ ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=2 e
 - Each episode lasts 30 seconds
 - Total run time ~60 seconds + reset time
 
-### 4. Headless Mode (No GUI)
+### 5. Headless Mode - No GUI (TurtleBot4)
 ```bash
-ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=5 gui:=false
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py num_episodes:=5 gui:=false
 ```
 
 **Expected Behavior:**
@@ -73,14 +106,37 @@ ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=5 g
 - All other functionality works the same
 - Useful for automated testing/data collection
 
-### 5. Custom Output File
+### 6. Custom Output File (TurtleBot4)
 ```bash
-ros2 launch turtlebot_simulation episodic_simulation.launch.py output_file:=/tmp/my_scores.csv
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py output_file:=/tmp/my_scores.csv
 ```
 
 **Expected Behavior:**
 - Scores saved to `/tmp/my_scores.csv`
 - Original `episode_scores.txt` is not created
+
+### 7. Lite Model (TurtleBot4)
+```bash
+ros2 launch turtlebot_simulation turtlebot4_gazebo.launch.py model:=lite
+```
+
+**Expected Behavior:**
+- TurtleBot4 Lite model spawns (without HMI display)
+- All other features work normally
+
+## Testing Scenarios - TurtleBot3 Legacy
+
+The original TurtleBot3 simulation is still available for backward compatibility.
+
+### 1. Basic TurtleBot3 Simulation
+```bash
+ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
+```
+
+### 2. TurtleBot3 Episodic Mode
+```bash
+ros2 launch turtlebot_simulation episodic_simulation.launch.py
+```
 
 ## Verification Steps
 
