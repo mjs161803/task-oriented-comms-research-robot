@@ -14,9 +14,13 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-turtlebot3-description \
     ros-jazzy-ros-gz-sim \
     ros-jazzy-ros-gz-bridge \
+    ros-jazzy-ros-gz-interfaces \
     ros-jazzy-twist-mux \
     ros-jazzy-joy \
     ros-jazzy-teleop-twist-joy \
+    ros-jazzy-nav2-bringup \
+    ros-jazzy-slam-toolbox \
+    ros-jazzy-tf-transformations \
     wget \
     git \
     software-properties-common \
