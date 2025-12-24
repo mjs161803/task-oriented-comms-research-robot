@@ -38,14 +38,25 @@ def generate_launch_description():
         'joystick.yaml'
     ])
     
-    # Get URDF via xacro for TurtleBot3
+    # Get URDF for TurtleBot3 (use Gazebo version with plugins)
+    # Note: We'll use SDF for spawning to get proper Gazebo Harmonic plugins
+    pkg_turtlebot3_gazebo = FindPackageShare('turtlebot3_gazebo')
+    robot_description_file = PathJoinSubstitution([
+        pkg_turtlebot3_gazebo,
+        'urdf',
+        'turtlebot3_waffle_pi.urdf'
+    ])
+    
+    # SDF model file with Gazebo Harmonic diff_drive plugin
+    robot_sdf_file = PathJoinSubstitution([
+        pkg_turtlebot_simulation,
+        'models',
+        'turtlebot3_waffle_pi.sdf'
+    ])
+    
     robot_description_content = Command([
-        FindExecutable(name='xacro'), ' ',
-        PathJoinSubstitution([
-            pkg_turtlebot3_description,
-            'urdf',
-            'turtlebot3_waffle_pi.urdf.xacro'
-        ])
+        FindExecutable(name='cat'), ' ',
+        robot_description_file
     ])
     
     # Launch arguments
@@ -105,13 +116,13 @@ def generate_launch_description():
         output='screen'
     )
     
-    # Spawn Turtlebot3 using ros_gz_sim create
+    # Spawn Turtlebot3 using ros_gz_sim create with SDF
     spawn_turtlebot = Node(
         package='ros_gz_sim',
         executable='create',
         arguments=[
+            '-file', robot_sdf_file,
             '-name', 'turtlebot3_waffle_pi',
-            '-topic', 'robot_description',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',

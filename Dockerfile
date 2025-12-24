@@ -11,6 +11,12 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
     python3-rosdep \
+    ros-jazzy-turtlebot3-description \
+    ros-jazzy-ros-gz-sim \
+    ros-jazzy-ros-gz-bridge \
+    ros-jazzy-twist-mux \
+    ros-jazzy-joy \
+    ros-jazzy-teleop-twist-joy \
     wget \
     git \
     software-properties-common \

@@ -30,5 +30,5 @@
     enable_button: 0  # Deadman switch (button index may vary by device)
     enable_turbo_button: 1  # Turbo mode (button index may vary by device)
     
-    require_enable_button: true
+    require_enable_button: false
     inverted_reverse: false

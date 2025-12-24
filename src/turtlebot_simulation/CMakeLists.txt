@@ -8,11 +8,12 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 
-# Install launch files, worlds, and config files
+# Install launch files, worlds, config files, and models
 install(DIRECTORY
   launch
   worlds
   config
+  models
   DESTINATION share/${PROJECT_NAME}/
 )
 
