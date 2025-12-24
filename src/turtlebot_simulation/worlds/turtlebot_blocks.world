@@ -2,16 +2,6 @@
 <sdf version="1.8">
   <world name="turtlebot_world">
     
-    <!-- Gazebo ROS Bridge Plugin - Provides ROS2 integration -->
-    <plugin filename="gz-sim-ros-state-system" name="gz::sim::systems::RosState">
-      <ros>
-        <namespace>/gazebo</namespace>
-        <remapping>get_entity_state:=get_entity_state</remapping>
-        <remapping>set_entity_state:=set_entity_state</remapping>
-      </ros>
-      <update_rate>100.0</update_rate>
-    </plugin>
-    
     <!-- A global light source -->
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
