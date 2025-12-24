@@ -2,7 +2,7 @@
 Simulation to explore task-oriented communication schemes to enable robot task completion.
 
 ## Overview
-This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulation featuring a TurtleBot3 Waffle Pi robot with a Pi Camera and interactive blocks that the robot can push around.
+This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulation featuring a TurtleBot 4 robot with interactive blocks that the robot can push around.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulatio
 ### Option 2: Native Installation
 - ROS2 Jazzy
 - Gazebo Harmonic (installed with ROS2)
-- TurtleBot3 packages
+- TurtleBot4 packages
 
 ## Installation
 
@@ -92,12 +92,12 @@ docker run -it --rm \
   task-oriented-comms-robot:latest
 ```
 
-#### Installing TurtleBot3 Packages in Container
+#### Installing TurtleBot4 Packages in Container
 
-When you first run the container, TurtleBot3 packages will be automatically installed if not already present. However, if you need to install them manually, run:
+When you first run the container, TurtleBot4 packages will be automatically installed if not already present. However, if you need to install them manually, run:
 ```bash
 apt-get update
-apt-get install -y ros-jazzy-turtlebot3 ros-jazzy-turtlebot3-gazebo ros-jazzy-turtlebot3-description
+apt-get install -y ros-jazzy-turtlebot4-simulator ros-jazzy-turtlebot4-description ros-jazzy-turtlebot4-msgs
 ```
 
 ### Option 2: Native Installation
@@ -105,21 +105,10 @@ apt-get install -y ros-jazzy-turtlebot3 ros-jazzy-turtlebot3-gazebo ros-jazzy-tu
 ### Install ROS2 Jazzy
 Follow the official ROS2 Jazzy installation guide: https://docs.ros.org/en/jazzy/Installation.html
 
-### Install TurtleBot3 Packages
+### Install TurtleBot4 Packages
 ```bash
 sudo apt update
-sudo apt install ros-jazzy-turtlebot3* ros-jazzy-ros-gz
-```
-
-### Set TurtleBot3 Model
-Add this to your `~/.bashrc`:
-```bash
-export TURTLEBOT3_MODEL=waffle_pi
-```
-
-Then source it:
-```bash
-source ~/.bashrc
+sudo apt install ros-jazzy-turtlebot4-simulator ros-jazzy-ros-gz
 ```
 
 ## Building the Workspace (Native Installation Only)
@@ -146,16 +135,16 @@ source install/setup.bash
 
 ### Standard Simulation Mode
 
-Launch the Gazebo simulation with TurtleBot3 and blocks:
+Launch the Gazebo simulation with TurtleBot4 and blocks:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
 ```
 
 This will:
 - Start Gazebo with a custom world
-- Spawn a TurtleBot3 Waffle Pi robot with Pi Camera at the origin
+- Spawn a TurtleBot 4 robot at the origin
 - Place four colored blocks (red, green, blue, yellow) in the world that the robot can push
-- Enable camera streaming at 640x480 resolution to ROS2 topics
+- Enable camera streaming to ROS2 topics
 
 ### Launch Arguments
 You can customize the launch with these arguments:
@@ -273,7 +262,7 @@ ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py use_joystick:=false
 For keyboard control, publish to the keyboard velocity topic in a new terminal:
 ```bash
 source install/setup.bash
-ros2 run turtlebot3_teleop teleop_keyboard --ros-args --remap /cmd_vel:=/cmd_vel_keyboard
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap /cmd_vel:=/cmd_vel_keyboard
 ```
 
 ### Velocity Command Topics
@@ -288,9 +277,9 @@ Higher priority sources override lower priority sources when active.
 
 ## Camera Information
 
-The TurtleBot3 Waffle Pi model includes a Raspberry Pi Camera that publishes images to ROS2 topics:
+The TurtleBot 4 includes a camera that publishes images to ROS2 topics:
 
-- **Image Topic**: `/camera/image_raw` - Raw camera images (640x480 resolution)
+- **Image Topic**: `/camera/image_raw` - Raw camera images
 - **Camera Info Topic**: `/camera/camera_info` - Camera calibration and metadata
 
 You can view the camera feed using:
@@ -311,7 +300,7 @@ The simulation world includes:
   - Green block at (-1.0, 1.0)
   - Blue block at (0.5, -1.5)
   - Yellow block at (-1.5, -0.5)
-- The blocks have realistic physics and can be pushed by the TurtleBot
+- The blocks have realistic physics and can be pushed by the robot
 
 ## Package Structure
 ```
