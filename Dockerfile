@@ -3,7 +3,6 @@ FROM osrf/ros:jazzy-desktop-full
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TURTLEBOT3_MODEL=waffle_pi
 
 # Install additional dependencies
 # Core build tools and utilities
@@ -11,7 +10,10 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
     python3-rosdep \
-    ros-jazzy-turtlebot3-description \
+    ros-jazzy-turtlebot4-simulator \
+    ros-jazzy-turtlebot4-description \
+    ros-jazzy-turtlebot4-msgs \
+    ros-jazzy-irobot-create-msgs \
     ros-jazzy-ros-gz-sim \
     ros-jazzy-ros-gz-bridge \
     ros-jazzy-twist-mux \
