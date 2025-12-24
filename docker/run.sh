@@ -26,7 +26,6 @@ docker run -it --rm \
   --device /dev/input:/dev/input \
   -e DISPLAY=${DISPLAY} \
   -e QT_X11_NO_MITSHM=1 \
-  -e TURTLEBOT3_MODEL=waffle_pi \
   -e NVIDIA_VISIBLE_DEVICES=all \
   -e NVIDIA_DRIVER_CAPABILITIES=all \
   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
