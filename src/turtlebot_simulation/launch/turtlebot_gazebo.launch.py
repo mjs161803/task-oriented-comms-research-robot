@@ -15,7 +15,7 @@ def generate_launch_description():
     # Get package directories
     pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
     pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
-    pkg_turtlebot3_description = FindPackageShare('turtlebot3_description')
+    pkg_turtlebot4_description = FindPackageShare('turtlebot4_description')
     
     # Paths to world file
     world_file = PathJoinSubstitution([
@@ -38,24 +38,16 @@ def generate_launch_description():
         'joystick.yaml'
     ])
     
-    # Get URDF for TurtleBot3 (use Gazebo version with plugins)
-    # Note: We'll use SDF for spawning to get proper Gazebo Harmonic plugins
-    pkg_turtlebot3_gazebo = FindPackageShare('turtlebot3_gazebo')
+    # Get URDF for TurtleBot4
     robot_description_file = PathJoinSubstitution([
-        pkg_turtlebot3_gazebo,
+        pkg_turtlebot4_description,
         'urdf',
-        'turtlebot3_waffle_pi.urdf'
-    ])
-    
-    # SDF model file with Gazebo Harmonic diff_drive plugin
-    robot_sdf_file = PathJoinSubstitution([
-        pkg_turtlebot_simulation,
-        'models',
-        'turtlebot3_waffle_pi.sdf'
+        'standard',
+        'turtlebot4.urdf.xacro'
     ])
     
     robot_description_content = Command([
-        FindExecutable(name='cat'), ' ',
+        FindExecutable(name='xacro'), ' ',
         robot_description_file
     ])
     
@@ -90,7 +82,6 @@ def generate_launch_description():
     )
     
     # Gazebo Harmonic (using ros_gz_sim)
-    # Build the gz_args based on gui setting
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
@@ -116,13 +107,13 @@ def generate_launch_description():
         output='screen'
     )
     
-    # Spawn Turtlebot3 using ros_gz_sim create with SDF
+    # Spawn TurtleBot4 using ros_gz_sim create
     spawn_turtlebot = Node(
         package='ros_gz_sim',
         executable='create',
         arguments=[
-            '-file', robot_sdf_file,
-            '-name', 'turtlebot3_waffle_pi',
+            '-topic', '/robot_description',
+            '-name', 'turtlebot4',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',

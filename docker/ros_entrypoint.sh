@@ -38,14 +38,14 @@ if ! dpkg -s ros-jazzy-twist-mux >/dev/null 2>&1; then
         2>/dev/null || echo "Warning: control package installation had issues"
 fi
 
-# Install TurtleBot3 packages if not already installed
-if ! dpkg -s ros-jazzy-turtlebot3-gazebo >/dev/null 2>&1; then
-    echo "Installing TurtleBot3 packages..."
+# Install TurtleBot4 packages if not already installed
+if ! dpkg -s ros-jazzy-turtlebot4-simulator >/dev/null 2>&1; then
+    echo "Installing TurtleBot4 packages..."
     apt-get install -y \
-        ros-jazzy-turtlebot3 \
-        ros-jazzy-turtlebot3-gazebo \
-        ros-jazzy-turtlebot3-description \
-        2>/dev/null || echo "Warning: TurtleBot3 package installation failed, manual installation may be required"
+        ros-jazzy-turtlebot4-simulator \
+        ros-jazzy-turtlebot4-description \
+        ros-jazzy-turtlebot4-msgs \
+        2>/dev/null || echo "Warning: TurtleBot4 package installation failed, manual installation may be required"
 fi
 
 rm -rf /var/lib/apt/lists/*

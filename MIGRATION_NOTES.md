@@ -1,6 +1,8 @@
-# Migration Notes: ROS2 Humble → ROS2 Jazzy with Gazebo Harmonic
+# Migration Notes: ROS2 Humble → ROS2 Jazzy with Gazebo Harmonic → TurtleBot4
 
-This document describes the migration from ROS2 Humble with Gazebo Classic to ROS2 Jazzy with Gazebo Harmonic.
+This document describes the migrations:
+1. ROS2 Humble with Gazebo Classic to ROS2 Jazzy with Gazebo Harmonic
+2. TurtleBot3 to TurtleBot4
 
 ## Summary of Changes
 
@@ -8,6 +10,16 @@ This document describes the migration from ROS2 Humble with Gazebo Classic to RO
 - **Base Image**: Updated from `osrf/ros:humble-desktop-full` to `osrf/ros:jazzy-desktop-full`
 - **OS Version**: Ubuntu 22.04 → Ubuntu 24.04
 - **Gazebo Version**: Gazebo Classic (Gazebo 11) → Gazebo Harmonic (Gazebo Sim)
+- **Robot Platform**: TurtleBot3 Waffle Pi → TurtleBot 4
+
+### Key Package Changes
+
+#### TurtleBot Platform Migration
+| Previous Package (TurtleBot3) | New Package (TurtleBot4) |
+|-------------------------------|--------------------------|
+| `ros-jazzy-turtlebot3` | `ros-jazzy-turtlebot4-simulator` |
+| `ros-jazzy-turtlebot3-gazebo` | `ros-jazzy-turtlebot4-description` |
+| `ros-jazzy-turtlebot3-description` | `ros-jazzy-turtlebot4-msgs` |
 
 ### Key Package Changes
 
@@ -25,21 +37,20 @@ This document describes the migration from ROS2 Humble with Gazebo Classic to RO
 
 ### Launch File Changes
 
-#### Before (Gazebo Classic)
+#### Before (TurtleBot3 with Gazebo Classic)
 ```python
-pkg_gazebo_ros = FindPackageShare('gazebo_ros')
-gzserver = IncludeLaunchDescription(...)
-gzclient = IncludeLaunchDescription(...)
-spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py', ...)
+pkg_turtlebot3_description = FindPackageShare('turtlebot3_description')
+pkg_turtlebot3_gazebo = FindPackageShare('turtlebot3_gazebo')
+spawn_entity = Node(package='ros_gz_sim', executable='create', 
+                   arguments=['-file', robot_sdf_file, ...])
 ```
 
-#### After (Gazebo Harmonic)
+#### After (TurtleBot4 with Gazebo Harmonic)
 ```python
-pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
-gz_sim = IncludeLaunchDescription(...)
-robot_state_publisher = Node(...)  # NEW: Required for robot description
-spawn_entity = Node(package='ros_gz_sim', executable='create', ...)
-bridge = Node(package='ros_gz_bridge', ...)  # NEW: Bridge for ROS2-Gazebo communication
+pkg_turtlebot4_description = FindPackageShare('turtlebot4_description')
+robot_description_content = Command([FindExecutable(name='xacro'), ' ', robot_description_file])
+spawn_entity = Node(package='ros_gz_sim', executable='create', 
+                   arguments=['-topic', '/robot_description', ...])
 ```
 
 ### World File Changes
@@ -59,18 +70,36 @@ bridge = Node(package='ros_gz_bridge', ...)  # NEW: Bridge for ROS2-Gazebo commu
 ### Installation Strategy
 
 To handle potential package availability issues:
-1. **Build-time**: Install only core tools (colcon, git, wget, rosdep)
-2. **Runtime**: Install ROS2 Jazzy packages via entrypoint script
+1. **Build-time**: Install core tools and TurtleBot4 packages from ROS Jazzy repositories
+2. **Runtime**: Verify and install missing packages via entrypoint script
    - This provides flexibility if packages are not yet in repositories
    - Allows graceful degradation if specific packages are unavailable
+
+### GPG Key Configuration
+
+The Dockerfile now includes proper GPG key configuration to ensure package repositories are trusted:
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    lsb-release \
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && rm -rf /var/lib/apt/lists/*
+```
 
 ## Known Issues and Considerations
 
 ### 1. Package Availability
-Some ROS2 Jazzy packages may not be immediately available in all package repositories. The entrypoint script (`docker/ros_entrypoint.sh`) handles installation at runtime to work around this.
+TurtleBot4 packages are available in ROS2 Jazzy repositories. The pre-built `ros-jazzy-turtlebot4-simulator` package is used as specified.
 
-### 2. TurtleBot3 Compatibility
-TurtleBot3 packages (`ros-jazzy-turtlebot3-*`) may need manual installation or building from source if not available in Jazzy repositories. The system is designed to gracefully handle this.
+### 2. TurtleBot4 Compatibility
+TurtleBot4 uses a different robot description format compared to TurtleBot3:
+- Uses xacro files for robot description
+- Different sensor configuration
+- Different dimensions and capabilities
+
+### 3. Environment Variables
+TurtleBot4 does not require a MODEL environment variable like TurtleBot3 did (TURTLEBOT3_MODEL). The robot model is specified directly in the URDF/xacro files.
 
 ### 3. Gazebo Harmonic vs Classic
 Gazebo Harmonic has different:
@@ -106,7 +135,7 @@ The `block_observer.py` node queries Gazebo for entity states. This functionalit
    ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
    ```
 
-3. **Robot Spawn Test**: Verify TurtleBot3 spawns correctly in simulation
+3. **Robot Spawn Test**: Verify TurtleBot4 spawns correctly in simulation
 
 4. **Control Test**: Verify robot responds to velocity commands
 
@@ -116,21 +145,22 @@ The `block_observer.py` node queries Gazebo for entity states. This functionalit
 
 ## Rollback Plan
 
-If issues arise, rollback to ROS2 Humble:
-1. Checkout the previous commit before this migration
+If issues arise, rollback to TurtleBot3:
+1. Checkout the commit before TurtleBot4 migration
 2. Rebuild Docker images
-3. TurtleBot3 packages have better support in Humble
+3. TurtleBot3 packages are available in Jazzy
 
 ## Future Improvements
 
-1. **Custom Gazebo Models**: Migrate to Gazebo Harmonic model format
-2. **Advanced Sensors**: Take advantage of Gazebo Harmonic's improved sensor models
+1. **Custom Gazebo Models**: Optimize block models for TurtleBot4 interaction
+2. **Advanced Sensors**: Take advantage of TurtleBot4's sensor suite
 3. **Performance**: Optimize ros_gz_bridge topic mappings
-4. **Testing**: Add automated tests for Gazebo Harmonic integration
+4. **Testing**: Add automated tests for TurtleBot4 integration
 
 ## References
 
 - [ROS2 Jazzy Documentation](https://docs.ros.org/en/jazzy/)
 - [Gazebo Harmonic Documentation](https://gazebosim.org/docs/harmonic)
+- [TurtleBot4 Documentation](https://turtlebot.github.io/turtlebot4-user-manual/)
 - [ros_gz Documentation](https://github.com/gazebosim/ros_gz)
 - [ROS2 Jazzy Migration Guide](https://docs.ros.org/en/jazzy/Releases/Release-Jazzy-Jalisco.html)

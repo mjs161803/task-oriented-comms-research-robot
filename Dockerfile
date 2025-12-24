@@ -3,7 +3,14 @@ FROM osrf/ros:jazzy-desktop-full
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TURTLEBOT3_MODEL=waffle_pi
+
+# Add GPG keys for additional repositories
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    lsb-release \
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install additional dependencies
 # Core build tools and utilities
@@ -11,7 +18,9 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
     python3-rosdep \
-    ros-jazzy-turtlebot3-description \
+    ros-jazzy-turtlebot4-simulator \
+    ros-jazzy-turtlebot4-description \
+    ros-jazzy-turtlebot4-msgs \
     ros-jazzy-ros-gz-sim \
     ros-jazzy-ros-gz-bridge \
     ros-jazzy-twist-mux \
