@@ -6,7 +6,7 @@ source /opt/ros/jazzy/setup.bash
 
 # Install required ROS2 Jazzy packages if not already installed
 echo "Checking and installing required ROS2 Jazzy packages..."
-apt-get update
+apt-get update || { echo "Failed to update package lists"; exit 1; }
 
 # Install Gazebo Harmonic and ROS-Gazebo bridge packages
 if ! dpkg -s ros-jazzy-ros-gz-sim >/dev/null 2>&1; then

@@ -117,7 +117,7 @@ def generate_launch_description():
             '-z', '0.01',
             '-Y', '0.0'
         ],
-        output='screen',
+        output='screen'
     )
     
     # ROS-Gazebo bridge for cmd_vel and other topics
