@@ -1,7 +1,7 @@
 # Testing Instructions for Episodic Simulation System
 
 ## Prerequisites
-- ROS2 Humble environment (either Docker container or native installation)
+- ROS2 Jazzy environment (either Docker container or native installation)
 - All dependencies installed (see README.md)
 
 ## Building the Package

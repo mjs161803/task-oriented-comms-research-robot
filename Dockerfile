@@ -1,23 +1,25 @@
-# Use official ROS2 Humble base image
-FROM osrf/ros:humble-desktop-full
+# Use official ROS2 Jazzy base image (Ubuntu 24.04)
+FROM osrf/ros:jazzy-desktop-full
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TURTLEBOT3_MODEL=waffle_pi
 
 # Install additional dependencies
-# Note: TurtleBot3 packages may need to be installed when running the container
-# if they are not available in package repos during build
+# Core build tools and utilities
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
+    python3-pip \
+    python3-rosdep \
+    ros-jazzy-turtlebot3-description \
+    ros-jazzy-ros-gz-sim \
+    ros-jazzy-ros-gz-bridge \
+    ros-jazzy-twist-mux \
+    ros-jazzy-joy \
+    ros-jazzy-teleop-twist-joy \
     wget \
     git \
-    ros-humble-gazebo-ros-pkgs \
-    ros-humble-gazebo-msgs \
-    ros-humble-gazebo-plugins \
-    ros-humble-twist-mux \
-    ros-humble-joy \
-    ros-humble-teleop-twist-joy \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 # Create workspace
@@ -27,11 +29,11 @@ WORKDIR /root/workspace
 COPY src ./src
 
 # Build the workspace
-RUN . /opt/ros/humble/setup.sh && \
+RUN . /opt/ros/jazzy/setup.sh && \
     colcon build --symlink-install
 
 # Configure .bashrc to source ROS and workspace setup in interactive shells
-RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
     echo "if [ -f /root/workspace/install/setup.bash ]; then source /root/workspace/install/setup.bash; fi" >> /root/.bashrc
 
 # Setup entrypoint
