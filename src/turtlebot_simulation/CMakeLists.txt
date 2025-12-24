@@ -19,6 +19,7 @@ install(DIRECTORY
 # Install scripts
 install(PROGRAMS
   scripts/block_observer.py
+  scripts/episode_manager.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

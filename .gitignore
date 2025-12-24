@@ -3,6 +3,9 @@
 /install/
 /log/
 
+# Episode scores output
+episode_scores.txt
+
 # Python cache
 __pycache__/
 *.py[cod]
