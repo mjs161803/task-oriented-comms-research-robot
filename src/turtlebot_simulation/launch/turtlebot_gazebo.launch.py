@@ -2,10 +2,11 @@
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Command, FindExecutable
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -14,6 +15,7 @@ def generate_launch_description():
     # Get package directories
     pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
     pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
+    pkg_turtlebot3_description = FindPackageShare('turtlebot3_description')
     
     # Paths to world file
     world_file = PathJoinSubstitution([
@@ -34,6 +36,16 @@ def generate_launch_description():
         pkg_turtlebot_simulation,
         'config',
         'joystick.yaml'
+    ])
+    
+    # Get URDF via xacro for TurtleBot3
+    robot_description_content = Command([
+        FindExecutable(name='xacro'), ' ',
+        PathJoinSubstitution([
+            pkg_turtlebot3_description,
+            'urdf',
+            'turtlebot3_waffle_pi.urdf.xacro'
+        ])
     ])
     
     # Launch arguments
@@ -67,6 +79,7 @@ def generate_launch_description():
     )
     
     # Gazebo Harmonic (using ros_gz_sim)
+    # Build the gz_args based on gui setting
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
@@ -76,25 +89,46 @@ def generate_launch_description():
             ])
         ]),
         launch_arguments={
-            'gz_args': ['-r -v4 ', world],
+            'gz_args': [world, ' -r -v 4'],
             'on_exit_shutdown': 'true'
         }.items()
     )
     
-    # Spawn Turtlebot3 model using gazebo model database
-    # The TurtleBot3 waffle_pi model should be available if turtlebot3_gazebo is installed
+    # Robot State Publisher
+    robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        parameters=[{
+            'robot_description': robot_description_content,
+            'use_sim_time': use_sim_time
+        }],
+        output='screen'
+    )
+    
+    # Spawn Turtlebot3 using ros_gz_sim create
     spawn_turtlebot = Node(
         package='ros_gz_sim',
         executable='create',
         arguments=[
             '-name', 'turtlebot3_waffle_pi',
-            '-topic', '/robot_description',
+            '-topic', 'robot_description',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',
             '-Y', '0.0'
         ],
         output='screen',
+    )
+    
+    # ROS-Gazebo bridge for cmd_vel and other topics
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+        ],
+        output='screen'
     )
     
     # twist_mux node - multiplexes velocity commands from multiple sources
@@ -128,7 +162,7 @@ def generate_launch_description():
     )
     
     # Block observer node - observes blocks and publishes sum of pairwise distances
-    # Note: This node queries Gazebo via /gazebo/get_entity_state service
+    # Note: This node queries Gazebo via services
     block_observer = Node(
         package='turtlebot_simulation',
         executable='block_observer.py',
@@ -142,7 +176,9 @@ def generate_launch_description():
         declare_world_arg,
         declare_use_joystick_arg,
         gz_sim,
+        robot_state_publisher,
         spawn_turtlebot,
+        bridge,
         twist_mux_node,
         joy_node,
         teleop_twist_joy_node,
