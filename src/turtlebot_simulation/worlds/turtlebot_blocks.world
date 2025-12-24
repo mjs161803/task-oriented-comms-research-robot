@@ -9,7 +9,7 @@
 
     <!-- Ground plane -->
     <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground%20Plane</uri>
     </include>
 
     <!-- Block 1 - Red -->
