@@ -6,21 +6,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TURTLEBOT3_MODEL=waffle_pi
 
 # Install additional dependencies
-# Note: TurtleBot3 packages may need to be installed when running the container
-# if they are not available in package repos during build
+# Core build tools and utilities
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
+    python3-pip \
+    python3-rosdep \
     wget \
     git \
-    ros-jazzy-ros-gz \
-    ros-jazzy-ros-gz-sim \
-    ros-jazzy-ros-gz-bridge \
-    ros-jazzy-ros-gz-interfaces \
-    ros-jazzy-robot-state-publisher \
-    ros-jazzy-xacro \
-    ros-jazzy-twist-mux \
-    ros-jazzy-joy \
-    ros-jazzy-teleop-twist-joy \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 # Create workspace
