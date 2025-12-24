@@ -1,113 +1,69 @@
 #!/usr/bin/env python3
 
 import os
+from pathlib import Path
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
+    """Setup launch with evaluated paths"""
     # Get package directories
-    pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
-    pkg_turtlebot4_gz_bringup = FindPackageShare('turtlebot4_gz_bringup')
-    pkg_turtlebot4_description = FindPackageShare('turtlebot4_description')
-    pkg_irobot_create_description = FindPackageShare('irobot_create_description')
-    pkg_irobot_create_gz_bringup = FindPackageShare('irobot_create_gz_bringup')
-    pkg_irobot_create_gz_plugins = FindPackageShare('irobot_create_gz_plugins')
-    pkg_turtlebot4_gz_gui_plugins = FindPackageShare('turtlebot4_gz_gui_plugins')
-    pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
+    pkg_turtlebot_simulation = get_package_share_directory('turtlebot_simulation')
+    pkg_turtlebot4_gz_bringup = get_package_share_directory('turtlebot4_gz_bringup')
+    pkg_turtlebot4_description = get_package_share_directory('turtlebot4_description')
+    pkg_irobot_create_description = get_package_share_directory('irobot_create_description')
+    pkg_irobot_create_gz_bringup = get_package_share_directory('irobot_create_gz_bringup')
+    pkg_irobot_create_gz_plugins = get_package_share_directory('irobot_create_gz_plugins')
+    pkg_turtlebot4_gz_gui_plugins = get_package_share_directory('turtlebot4_gz_gui_plugins')
+    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
     
     # Paths to world file
-    world_file = PathJoinSubstitution([
-        pkg_turtlebot_simulation,
-        'worlds',
-        'turtlebot4_blocks.sdf'
-    ])
+    world_file = os.path.join(pkg_turtlebot_simulation, 'worlds', 'turtlebot4_blocks.sdf')
     
     # Path to twist_mux config
-    twist_mux_config = PathJoinSubstitution([
-        pkg_turtlebot_simulation,
-        'config',
-        'twist_mux.yaml'
-    ])
+    twist_mux_config = os.path.join(pkg_turtlebot_simulation, 'config', 'twist_mux.yaml')
     
     # Path to joystick config
-    joystick_config = PathJoinSubstitution([
-        pkg_turtlebot_simulation,
-        'config',
-        'joystick.yaml'
-    ])
+    joystick_config = os.path.join(pkg_turtlebot_simulation, 'config', 'joystick.yaml')
     
     # Launch arguments
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    gui = LaunchConfiguration('gui', default='true')
-    world = LaunchConfiguration('world', default=world_file)
-    use_joystick = LaunchConfiguration('use_joystick', default='true')
-    model = LaunchConfiguration('model', default='standard')
-    
-    declare_use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='true',
-        description='Use simulation (Gazebo) clock if true'
-    )
-    
-    declare_gui_arg = DeclareLaunchArgument(
-        'gui',
-        default_value='true',
-        description='Set to "true" to launch Gazebo GUI'
-    )
-    
-    declare_world_arg = DeclareLaunchArgument(
-        'world',
-        default_value=world_file,
-        description='Path to world file'
-    )
-    
-    declare_use_joystick_arg = DeclareLaunchArgument(
-        'use_joystick',
-        default_value='true',
-        description='Set to "true" to enable joystick control'
-    )
-    
-    declare_model_arg = DeclareLaunchArgument(
-        'model',
-        default_value='standard',
-        description='TurtleBot4 model: standard or lite'
-    )
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    gui = LaunchConfiguration('gui')
+    world = LaunchConfiguration('world')
+    use_joystick = LaunchConfiguration('use_joystick')
+    model = LaunchConfiguration('model')
     
     # Set Gazebo resource path
     gz_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
         value=':'.join([
-            os.path.join(pkg_turtlebot4_gz_bringup.perform(None), 'worlds'),
-            os.path.join(pkg_irobot_create_gz_bringup.perform(None), 'worlds'),
-            os.path.join(pkg_turtlebot_simulation.perform(None), 'worlds'),
-            str(Path(pkg_turtlebot4_description.perform(None)).parent.resolve()),
-            str(Path(pkg_irobot_create_description.perform(None)).parent.resolve())
+            os.path.join(pkg_turtlebot4_gz_bringup, 'worlds'),
+            os.path.join(pkg_irobot_create_gz_bringup, 'worlds'),
+            os.path.join(pkg_turtlebot_simulation, 'worlds'),
+            str(Path(pkg_turtlebot4_description).parent.resolve()),
+            str(Path(pkg_irobot_create_description).parent.resolve())
         ])
     )
 
     gz_gui_plugin_path = SetEnvironmentVariable(
         name='GZ_GUI_PLUGIN_PATH',
         value=':'.join([
-            os.path.join(pkg_turtlebot4_gz_gui_plugins.perform(None), 'lib'),
-            os.path.join(pkg_irobot_create_gz_plugins.perform(None), 'lib')
+            os.path.join(pkg_turtlebot4_gz_gui_plugins, 'lib'),
+            os.path.join(pkg_irobot_create_gz_plugins, 'lib')
         ])
     )
     
     # Gazebo Harmonic
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
-            PathJoinSubstitution([
-                pkg_ros_gz_sim,
-                'launch',
-                'gz_sim.launch.py'
-            ])
+            os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
         ]),
         launch_arguments={
             'gz_args': [world, ' -r -v 4'],
@@ -127,8 +83,8 @@ def generate_launch_description():
     )
     
     # Spawn TurtleBot4
-    turtlebot4_spawn_launch = PathJoinSubstitution(
-        [pkg_turtlebot4_gz_bringup, 'launch', 'turtlebot4_spawn.launch.py'])
+    turtlebot4_spawn_launch = os.path.join(
+        pkg_turtlebot4_gz_bringup, 'launch', 'turtlebot4_spawn.launch.py')
 
     robot_spawn = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([turtlebot4_spawn_launch]),
@@ -182,12 +138,7 @@ def generate_launch_description():
         output='screen'
     )
     
-    return LaunchDescription([
-        declare_use_sim_time_arg,
-        declare_gui_arg,
-        declare_world_arg,
-        declare_use_joystick_arg,
-        declare_model_arg,
+    return [
         gz_resource_path,
         gz_gui_plugin_path,
         gz_sim,
@@ -197,4 +148,55 @@ def generate_launch_description():
         joy_node,
         teleop_twist_joy_node,
         block_observer
+    ]
+
+
+def generate_launch_description():
+    # Get package directories for default values
+    pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
+    
+    # Paths to world file
+    world_file = PathJoinSubstitution([
+        pkg_turtlebot_simulation,
+        'worlds',
+        'turtlebot4_blocks.sdf'
+    ])
+    
+    declare_use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true'
+    )
+    
+    declare_gui_arg = DeclareLaunchArgument(
+        'gui',
+        default_value='true',
+        description='Set to "true" to launch Gazebo GUI'
+    )
+    
+    declare_world_arg = DeclareLaunchArgument(
+        'world',
+        default_value=world_file,
+        description='Path to world file'
+    )
+    
+    declare_use_joystick_arg = DeclareLaunchArgument(
+        'use_joystick',
+        default_value='true',
+        description='Set to "true" to enable joystick control'
+    )
+    
+    declare_model_arg = DeclareLaunchArgument(
+        'model',
+        default_value='standard',
+        description='TurtleBot4 model: standard or lite'
+    )
+    
+    return LaunchDescription([
+        declare_use_sim_time_arg,
+        declare_gui_arg,
+        declare_world_arg,
+        declare_use_joystick_arg,
+        declare_model_arg,
+        OpaqueFunction(function=launch_setup)
     ])
