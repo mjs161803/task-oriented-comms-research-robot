@@ -12,7 +12,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     # Get package directories
-    pkg_gazebo_ros = FindPackageShare('gazebo_ros')
+    pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
     pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
     
     # Paths to world file
@@ -66,41 +66,29 @@ def generate_launch_description():
         description='Set to "true" to enable joystick control'
     )
     
-    # Gazebo server
-    gzserver = IncludeLaunchDescription(
+    # Gazebo Harmonic (using ros_gz_sim)
+    gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
-                pkg_gazebo_ros,
+                pkg_ros_gz_sim,
                 'launch',
-                'gzserver.launch.py'
+                'gz_sim.launch.py'
             ])
         ]),
         launch_arguments={
-            'world': world,
-            'verbose': 'false'
+            'gz_args': ['-r -v4 ', world],
+            'on_exit_shutdown': 'true'
         }.items()
-    )
-    
-    # Gazebo client
-    gzclient = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            PathJoinSubstitution([
-                pkg_gazebo_ros,
-                'launch',
-                'gzclient.launch.py'
-            ])
-        ]),
-        condition=IfCondition(gui)
     )
     
     # Spawn Turtlebot3 model using gazebo model database
     # The TurtleBot3 waffle_pi model should be available if turtlebot3_gazebo is installed
     spawn_turtlebot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
+        package='ros_gz_sim',
+        executable='create',
         arguments=[
-            '-entity', 'turtlebot3_waffle_pi',
-            '-database', 'turtlebot3_waffle_pi',
+            '-name', 'turtlebot3_waffle_pi',
+            '-topic', '/robot_description',
             '-x', '0.0',
             '-y', '0.0',
             '-z', '0.01',
@@ -153,8 +141,7 @@ def generate_launch_description():
         declare_gui_arg,
         declare_world_arg,
         declare_use_joystick_arg,
-        gzserver,
-        gzclient,
+        gz_sim,
         spawn_turtlebot,
         twist_mux_node,
         joy_node,

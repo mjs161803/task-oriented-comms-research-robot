@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
-<sdf version="1.6">
+<sdf version="1.8">
   <world name="turtlebot_world">
     
-    <!-- Gazebo ROS State Plugin - Provides get/set_entity_state services -->
-    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+    <!-- Gazebo ROS Bridge Plugin - Provides ROS2 integration -->
+    <plugin filename="gz-sim-ros-state-system" name="gz::sim::systems::RosState">
       <ros>
         <namespace>/gazebo</namespace>
         <remapping>get_entity_state:=get_entity_state</remapping>
@@ -14,12 +14,12 @@
     
     <!-- A global light source -->
     <include>
-      <uri>model://sun</uri>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
     </include>
 
     <!-- Ground plane -->
     <include>
-      <uri>model://ground_plane</uri>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
     </include>
 
     <!-- Block 1 - Red -->
