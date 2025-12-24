@@ -2,7 +2,7 @@
 Simulation to explore task-oriented communication schemes to enable robot task completion.
 
 ## Overview
-This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulation featuring a TurtleBot3 Waffle Pi robot with a Pi Camera and interactive blocks that the robot can push around.
+This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulation featuring a **TurtleBot 4 robot with OAK-D-Pro camera** and interactive blocks that the robot can push around. The OAK-D-Pro camera provides RGBD (color + depth) data at 640x480 resolution.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulatio
 ### Option 2: Native Installation
 - ROS2 Jazzy
 - Gazebo Harmonic (installed with ROS2)
-- TurtleBot3 packages
+- TurtleBot4 packages
 
 ## Installation
 
@@ -92,29 +92,30 @@ docker run -it --rm \
   task-oriented-comms-robot:latest
 ```
 
-#### Installing TurtleBot3 Packages in Container
+#### Installing TurtleBot4 Packages in Container
 
-When you first run the container, TurtleBot3 packages will be automatically installed if not already present. However, if you need to install them manually, run:
-```bash
-apt-get update
-apt-get install -y ros-jazzy-turtlebot3 ros-jazzy-turtlebot3-gazebo ros-jazzy-turtlebot3-description
-```
+TurtleBot4 packages are included in the workspace and built from source. The following packages are included:
+- turtlebot4_description
+- turtlebot4_gz_bringup (Gazebo Harmonic simulation support)
+- turtlebot4_msgs
+- turtlebot4_node
+- turtlebot4_navigation
+- irobot_create packages (Create3 base platform)
+
+All dependencies are automatically installed when you build the Docker image.
 
 ### Option 2: Native Installation
 
 ### Install ROS2 Jazzy
 Follow the official ROS2 Jazzy installation guide: https://docs.ros.org/en/jazzy/Installation.html
 
-### Install TurtleBot3 Packages
-```bash
-sudo apt update
-sudo apt install ros-jazzy-turtlebot3* ros-jazzy-ros-gz
-```
+### Install TurtleBot4 Packages
+Since TurtleBot4 packages are not available in Jazzy repositories yet, they are included in the workspace and built from source. All necessary packages are in the `src/` directory.
 
-### Set TurtleBot3 Model
+### Set TurtleBot4 Model
 Add this to your `~/.bashrc`:
 ```bash
-export TURTLEBOT3_MODEL=waffle_pi
+export TURTLEBOT4_MODEL=standard
 ```
 
 Then source it:
@@ -144,21 +145,42 @@ source install/setup.bash
 
 ## Running the Simulation
 
-### Standard Simulation Mode
+### Standard Simulation Mode (TurtleBot4)
 
-Launch the Gazebo simulation with TurtleBot3 and blocks:
+Launch the Gazebo simulation with TurtleBot4 and blocks:
+```bash
+ros2 launch turtlebot_simulation turtlebot4_gazebo.launch.py
+```
+
+This will:
+- Start Gazebo Harmonic with a custom world
+- Spawn a TurtleBot4 Standard robot with OAK-D-Pro camera at the origin
+- Place four colored blocks (red, green, blue, yellow) in the world that the robot can push
+- Enable RGBD camera streaming at 640x480 resolution to ROS2 topics
+
+### Legacy Simulation Mode (TurtleBot3)
+
+The original TurtleBot3 simulation is still available:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py
 ```
 
-This will:
-- Start Gazebo with a custom world
-- Spawn a TurtleBot3 Waffle Pi robot with Pi Camera at the origin
-- Place four colored blocks (red, green, blue, yellow) in the world that the robot can push
-- Enable camera streaming at 640x480 resolution to ROS2 topics
+### Launch Arguments (TurtleBot4)
+You can customize the TurtleBot4 launch with these arguments:
 
-### Launch Arguments
-You can customize the launch with these arguments:
+- `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
+- `use_sim_time:=true/false` - Use simulation time (default: true)
+- `world:=/path/to/world` - Path to custom world file
+- `model:=standard/lite` - TurtleBot4 model variant (default: standard)
+- `use_joystick:=true/false` - Enable joystick control (default: true)
+
+Example:
+```bash
+ros2 launch turtlebot_simulation turtlebot4_gazebo.launch.py gui:=false model:=lite
+```
+
+### Launch Arguments (TurtleBot3 Legacy)
+You can customize the TurtleBot3 launch with these arguments:
 
 - `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
 - `use_sim_time:=true/false` - Use simulation time (default: true)
@@ -169,38 +191,46 @@ Example:
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py gui:=false
 ```
 
-### Episodic Simulation Mode
+### Episodic Simulation Mode (TurtleBot4)
 
-For automated testing and data collection, you can run the simulation in episodic mode. This will:
-- Run the simulation for a specified number of episodes
+For automated testing and data collection with TurtleBot4:
+```bash
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py
+```
+
+This will:
+- Run the TurtleBot4 simulation for a specified number of episodes
 - Each episode runs for 60 seconds (configurable)
 - At the end of each episode, the latest score from the `/block_distances` topic is stored to a file
 - The simulation automatically resets between episodes
 - After all episodes complete, the system shuts down automatically
 
-Launch the episodic simulation:
+### Episodic Simulation Mode (TurtleBot3 Legacy)
+
+The original TurtleBot3 episodic simulation is still available:
 ```bash
 ros2 launch turtlebot_simulation episodic_simulation.launch.py
 ```
 
-#### Episodic Launch Arguments
+#### Episodic Launch Arguments (TurtleBot4)
 
 - `num_episodes:=N` - Number of episodes to run (default: 10)
 - `episode_duration:=SECONDS` - Duration of each episode in seconds (default: 60.0)
 - `output_file:=PATH` - Path to output file for storing episode scores (default: episode_scores.txt)
 - `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
 - `use_joystick:=true/false` - Enable joystick control (default: false for episodic mode)
+- `model:=standard/lite` - TurtleBot4 model variant (default: standard)
 
 Examples:
 ```bash
 # Run 20 episodes with default settings
-ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=20
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py num_episodes:=20
 
 # Run 5 episodes of 30 seconds each without GUI
-ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=5 episode_duration:=30.0 gui:=false
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py num_episodes:=5 episode_duration:=30.0 gui:=false
 
-# Custom output file
-ros2 launch turtlebot_simulation episodic_simulation.launch.py output_file:=/tmp/my_scores.txt
+# Custom output file with lite model
+ros2 launch turtlebot_simulation episodic_turtlebot4.launch.py output_file:=/tmp/my_scores.txt model:=lite
 ```
 
 The output file will contain one score per episode in CSV format:
@@ -217,7 +247,7 @@ The output file will contain one score per episode in CSV format:
 
 ## Controlling the TurtleBot
 
-The simulation includes **twist_mux** for managing multiple velocity command sources with priorities. The robot can be controlled via joystick or keyboard.
+The simulation includes **twist_mux** for managing multiple velocity command sources with priorities. Both TurtleBot4 and TurtleBot3 can be controlled via joystick or keyboard.
 
 ### Joystick Control (Recommended)
 
@@ -288,10 +318,20 @@ Higher priority sources override lower priority sources when active.
 
 ## Camera Information
 
-The TurtleBot3 Waffle Pi model includes a Raspberry Pi Camera that publishes images to ROS2 topics:
+### TurtleBot4 - OAK-D-Pro Camera
 
-- **Image Topic**: `/camera/image_raw` - Raw camera images (640x480 resolution)
-- **Camera Info Topic**: `/camera/camera_info` - Camera calibration and metadata
+The TurtleBot4 includes an **OAK-D-Pro** RGBD camera that publishes color images, depth images, point clouds, and camera info to ROS2 topics:
+
+- **RGB Image Topic**: `/oakd/rgb/preview/image_raw` - Color images (640x480 resolution)
+- **Depth Image Topic**: `/oakd/rgb/preview/depth` - Depth images (640x480 resolution)
+- **Point Cloud Topic**: `/oakd/rgb/preview/depth/points` - 3D point cloud data
+- **Camera Info Topic**: `/oakd/rgb/preview/camera_info` - Camera calibration and metadata
+
+The OAK-D-Pro provides:
+- **Resolution**: 640x480 pixels for both RGB and depth
+- **Update Rate**: 30 Hz
+- **Depth Range**: 0.3m to 100m
+- **Field of View**: ~71.5 degrees horizontal
 
 You can view the camera feed using:
 ```bash
@@ -300,8 +340,43 @@ ros2 run rqt_image_view rqt_image_view
 
 Or list all available camera topics:
 ```bash
-ros2 topic list | grep camera
+ros2 topic list | grep oakd
 ```
+
+### TurtleBot3 Legacy - Pi Camera
+
+The TurtleBot3 Waffle Pi model includes a Raspberry Pi Camera that publishes images to ROS2 topics:
+
+- **Image Topic**: `/camera/image_raw` - Raw camera images (640x480 resolution)
+- **Camera Info Topic**: `/camera/camera_info` - Camera calibration and metadata
+
+## Robot Models
+
+### TurtleBot4
+
+The TurtleBot4 is built on the iRobot Create3 base and comes in two variants:
+
+**Standard Model** (default):
+- OAK-D-Pro RGBD camera (640x480)
+- RPLIDAR A1M8 360° laser scanner
+- Built-in IMU
+- Create3 mobile base with cliff sensors
+- Interactive HMI display and buttons (in simulation)
+- Docking station support
+
+**Lite Model**:
+- Similar to Standard but without the HMI display
+- Lighter weight for different applications
+
+Both models support differential drive control and provide odometry data.
+
+### TurtleBot3 (Legacy)
+
+The TurtleBot3 Waffle Pi is still available for legacy support:
+- Raspberry Pi Camera (640x480)
+- 360° LDS (Laser Distance Sensor)
+- IMU
+- Differential drive base
 
 ## World Description
 The simulation world includes:
