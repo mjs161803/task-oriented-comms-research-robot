@@ -2,7 +2,7 @@
 Simulation to explore task-oriented communication schemes to enable robot task completion.
 
 ## Overview
-This repository contains a ROS2 Humble workspace with a Gazebo simulation featuring a TurtleBot3 Waffle Pi robot with a Pi Camera and interactive blocks that the robot can push around.
+This repository contains a ROS2 Jazzy workspace with a Gazebo Harmonic simulation featuring a TurtleBot3 Waffle Pi robot with a Pi Camera and interactive blocks that the robot can push around.
 
 ## Prerequisites
 
@@ -12,8 +12,8 @@ This repository contains a ROS2 Humble workspace with a Gazebo simulation featur
 - X11 server (for Gazebo GUI)
 
 ### Option 2: Native Installation
-- ROS2 Humble
-- Gazebo (installed with ROS2)
+- ROS2 Jazzy
+- Gazebo Harmonic (installed with ROS2)
 - TurtleBot3 packages
 
 ## Installation
@@ -97,18 +97,18 @@ docker run -it --rm \
 When you first run the container, TurtleBot3 packages will be automatically installed if not already present. However, if you need to install them manually, run:
 ```bash
 apt-get update
-apt-get install -y ros-humble-turtlebot3 ros-humble-turtlebot3-gazebo ros-humble-turtlebot3-description
+apt-get install -y ros-jazzy-turtlebot3 ros-jazzy-turtlebot3-gazebo ros-jazzy-turtlebot3-description
 ```
 
 ### Option 2: Native Installation
 
-### Install ROS2 Humble
-Follow the official ROS2 Humble installation guide: https://docs.ros.org/en/humble/Installation.html
+### Install ROS2 Jazzy
+Follow the official ROS2 Jazzy installation guide: https://docs.ros.org/en/jazzy/Installation.html
 
 ### Install TurtleBot3 Packages
 ```bash
 sudo apt update
-sudo apt install ros-humble-turtlebot3* ros-humble-gazebo-ros-pkgs
+sudo apt install ros-jazzy-turtlebot3* ros-jazzy-ros-gz
 ```
 
 ### Set TurtleBot3 Model
@@ -334,8 +334,8 @@ task-oriented-comms-research-robot/
 
 ## Docker Notes
 
-- The Docker image is based on `osrf/ros:humble-desktop-full` and includes all necessary dependencies
-- Gazebo GUI support is enabled through X11 forwarding
+- The Docker image is based on `osrf/ros:jazzy-desktop-full` (Ubuntu 24.04) and includes all necessary dependencies
+- Gazebo Harmonic GUI support is enabled through X11 forwarding
 - The workspace is automatically built during image creation
 - Source code changes can be made on the host and will be reflected in the container (when using docker-compose with volume mounts)
 - To rebuild the workspace inside a running container:
@@ -347,7 +347,7 @@ task-oriented-comms-research-robot/
 
 ## Gazebo GetEntity Service
 
-The Docker image installs Gazebo ROS packages that provide the ROS2 API plugin for Gazebo, including support for `gazebo_msgs` services related to entities (e.g., `GetEntityState`).
+The Docker image installs Gazebo ROS packages that provide the ROS2 API plugin for Gazebo Harmonic, including support for `gazebo_msgs` services related to entities (e.g., `GetEntityState`).
 
 ### Verify inside the container
 
