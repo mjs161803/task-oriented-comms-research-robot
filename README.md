@@ -275,12 +275,16 @@ The simulation uses **twist_mux** to manage multiple velocity sources with prior
 
 Higher priority sources override lower priority sources when active.
 
-## Camera Information
+## Sensor Information
 
-The TurtleBot 4 includes a camera that publishes images to ROS2 topics:
+The TurtleBot 4 includes several sensors that publish data to ROS2 topics:
 
-- **Image Topic**: `/camera/image_raw` - Raw camera images
-- **Camera Info Topic**: `/camera/camera_info` - Camera calibration and metadata
+### Camera
+
+- **Image Topic**: `/oakd/rgb/preview/image_raw` - Raw RGB camera images
+- **Depth Topic**: `/oakd/rgb/preview/depth` - Depth images
+- **Point Cloud Topic**: `/oakd/rgb/preview/depth/points` - 3D point cloud data
+- **Camera Info Topic**: `/oakd/rgb/preview/camera_info` - Camera calibration and metadata
 
 You can view the camera feed using:
 ```bash
@@ -290,6 +294,15 @@ ros2 run rqt_image_view rqt_image_view
 Or list all available camera topics:
 ```bash
 ros2 topic list | grep camera
+```
+
+### IMU (Inertial Measurement Unit)
+
+- **IMU Topic**: `/imu` - IMU sensor data (orientation, angular velocity, linear acceleration)
+
+You can view IMU data using:
+```bash
+ros2 topic echo /imu
 ```
 
 ## World Description
