@@ -110,13 +110,12 @@ Gazebo Harmonic has different:
 
 ### 4. ros_gz_bridge Topics
 The bridge needs explicit topic mappings. Currently configured:
-- `/cmd_vel` - Velocity commands to robot
 - `/clock` - Simulation clock
-
-Additional topics may need to be added for:
-- Camera streams
-- Sensor data
-- Other ROS2-Gazebo communications
+- `/oakd/rgb/preview/image_raw` - RGBD camera RGB image
+- `/oakd/rgb/preview/depth` - RGBD camera depth image
+- `/oakd/rgb/preview/depth/points` - RGBD camera point cloud
+- `/oakd/rgb/preview/camera_info` - Camera calibration info
+- `/imu` - IMU sensor data (orientation, angular velocity, linear acceleration)
 
 ### 5. Entity State Services
 The `block_observer.py` node queries Gazebo for entity states. This functionality needs to be verified with Gazebo Harmonic's service interface.
