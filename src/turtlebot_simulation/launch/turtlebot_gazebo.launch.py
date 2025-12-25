@@ -16,6 +16,7 @@ def generate_launch_description():
     pkg_ros_gz_sim = FindPackageShare('ros_gz_sim')
     pkg_turtlebot_simulation = FindPackageShare('turtlebot_simulation')
     pkg_turtlebot4_description = FindPackageShare('turtlebot4_description')
+    pkg_irobot_create_control = FindPackageShare('irobot_create_control')
     
     # Paths to world file
     world_file = PathJoinSubstitution([
@@ -48,7 +49,8 @@ def generate_launch_description():
     
     robot_description_content = Command([
         FindExecutable(name='xacro'), ' ',
-        robot_description_file
+        robot_description_file,
+        ' gazebo:=ignition'
     ])
     
     # Launch arguments
@@ -122,14 +124,35 @@ def generate_launch_description():
         output='screen'
     )
     
-    # ROS-Gazebo bridge for cmd_vel and other topics
+    # ROS-Gazebo bridge for clock and other topics
+    # Note: cmd_vel is handled by ros2_control, so we don't bridge it here
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
-            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         ],
+        output='screen'
+    )
+    # Path to control config
+    control_config = PathJoinSubstitution([
+        pkg_irobot_create_control,
+        'config',
+        'control.yaml'
+    ])
+
+    # Spawn controllers
+    start_joint_state_broadcaster = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster', '--param-file', control_config],
+        output='screen'
+    )
+
+    start_diff_drive_controller = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['diffdrive_controller', '--param-file', control_config],
         output='screen'
     )
     
@@ -138,7 +161,7 @@ def generate_launch_description():
         package='twist_mux',
         executable='twist_mux',
         parameters=[twist_mux_config, {'use_sim_time': use_sim_time}],
-        remappings=[('/cmd_vel_out', '/cmd_vel')],
+        remappings=[('/cmd_vel_out', '/diffdrive_controller/cmd_vel')],
         output='screen'
     )
     
@@ -157,7 +180,7 @@ def generate_launch_description():
         package='teleop_twist_joy',
         executable='teleop_node',
         name='teleop_twist_joy_node',
-        parameters=[joystick_config, {'use_sim_time': use_sim_time}],
+        parameters=[joystick_config, {'use_sim_time': use_sim_time, 'publish_stamped_twist': True}],
         remappings=[('/cmd_vel', '/cmd_vel_joy')],
         condition=IfCondition(use_joystick),
         output='screen'
@@ -181,6 +204,8 @@ def generate_launch_description():
         robot_state_publisher,
         spawn_turtlebot,
         bridge,
+        start_joint_state_broadcaster,
+        start_diff_drive_controller,
         twist_mux_node,
         joy_node,
         teleop_twist_joy_node,

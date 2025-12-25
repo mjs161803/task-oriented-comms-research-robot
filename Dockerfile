@@ -3,6 +3,9 @@ FROM osrf/ros:jazzy-desktop-full
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LD_LIBRARY_PATH=/opt/ros/jazzy/lib:${LD_LIBRARY_PATH:-}
+ENV GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib
+ENV GZ_SIM_RESOURCE_PATH=/opt/ros/jazzy/share:${GZ_SIM_RESOURCE_PATH:-}
 
 # Add GPG keys for additional repositories
 RUN apt-get update && apt-get install -y \
@@ -21,6 +24,10 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-turtlebot4-simulator \
     ros-jazzy-turtlebot4-description \
     ros-jazzy-turtlebot4-msgs \
+    ros-jazzy-ros-gz \
+    ros-jazzy-gz-ros2-control \
+    ros-jazzy-ros2-control \
+    ros-jazzy-ros2-controllers \
     ros-jazzy-ros-gz-sim \
     ros-jazzy-ros-gz-bridge \
     ros-jazzy-ros-gz-interfaces \
