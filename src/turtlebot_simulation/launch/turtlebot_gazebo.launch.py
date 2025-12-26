@@ -58,6 +58,7 @@ def generate_launch_description():
     gui = LaunchConfiguration('gui', default='true')
     world = LaunchConfiguration('world', default=world_file)
     use_joystick = LaunchConfiguration('use_joystick', default='true')
+    use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='false')
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -81,6 +82,12 @@ def generate_launch_description():
         'use_joystick',
         default_value='true',
         description='Set to "true" to enable joystick control'
+    )
+    
+    declare_use_plotjuggler_arg = DeclareLaunchArgument(
+        'use_plotjuggler',
+        default_value='false',
+        description='Set to "true" to launch PlotJuggler for data visualization'
     )
     
     # Gazebo Harmonic (using ros_gz_sim)
@@ -207,11 +214,21 @@ def generate_launch_description():
         output='screen'
     )
     
+    # PlotJuggler node - visualizes ROS2 topics in real-time
+    plotjuggler_node = Node(
+        package='plotjuggler',
+        executable='plotjuggler',
+        name='plotjuggler',
+        condition=IfCondition(use_plotjuggler),
+        output='screen'
+    )
+    
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
         declare_world_arg,
         declare_use_joystick_arg,
+        declare_use_plotjuggler_arg,
         gz_sim,
         robot_state_publisher,
         spawn_turtlebot,
@@ -221,6 +238,7 @@ def generate_launch_description():
         twist_mux_node,
         joy_node,
         teleop_twist_joy_node,
-        block_observer
+        block_observer,
+        plotjuggler_node
     ])
 

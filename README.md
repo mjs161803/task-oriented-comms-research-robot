@@ -152,11 +152,28 @@ You can customize the launch with these arguments:
 - `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
 - `use_sim_time:=true/false` - Use simulation time (default: true)
 - `world:=/path/to/world` - Path to custom world file
+- `use_plotjuggler:=true/false` - Enable/disable PlotJuggler for real-time data visualization (default: false)
 
 Example:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py gui:=false
 ```
+
+### PlotJuggler Integration
+
+PlotJuggler is a tool for visualizing time-series data from ROS2 topics in real-time. It can be launched automatically with the simulation:
+
+```bash
+ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py use_plotjuggler:=true
+```
+
+When PlotJuggler is enabled, it will start with the simulation and you can:
+- Subscribe to any ROS2 topic (e.g., `/cmd_vel`, `/imu`, `/block_distances`, `/odom`)
+- Visualize sensor data in real-time plots
+- Monitor robot behavior and performance metrics
+- Export data for offline analysis
+
+**Note**: PlotJuggler requires X11 forwarding which is already configured in the Docker setup.
 
 ### Episodic Simulation Mode
 
@@ -179,6 +196,7 @@ ros2 launch turtlebot_simulation episodic_simulation.launch.py
 - `output_file:=PATH` - Path to output file for storing episode scores (default: episode_scores.txt)
 - `gui:=true/false` - Enable/disable Gazebo GUI (default: true)
 - `use_joystick:=true/false` - Enable joystick control (default: false for episodic mode)
+- `use_plotjuggler:=true/false` - Enable PlotJuggler for data visualization (default: false for episodic mode)
 
 Examples:
 ```bash
@@ -190,6 +208,9 @@ ros2 launch turtlebot_simulation episodic_simulation.launch.py num_episodes:=5 e
 
 # Custom output file
 ros2 launch turtlebot_simulation episodic_simulation.launch.py output_file:=/tmp/my_scores.txt
+
+# Enable PlotJuggler for episodic runs to visualize data
+ros2 launch turtlebot_simulation episodic_simulation.launch.py use_plotjuggler:=true
 ```
 
 The output file will contain one score per episode in CSV format:
