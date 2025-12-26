@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-twist-mux \
     ros-jazzy-joy \
     ros-jazzy-teleop-twist-joy \
+    ros-jazzy-plotjuggler-ros \
     wget \
     git \
     software-properties-common \

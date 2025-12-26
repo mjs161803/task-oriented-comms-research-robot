@@ -30,6 +30,7 @@ def generate_launch_description():
     output_file = LaunchConfiguration('output_file', default='episode_scores.txt')
     gui = LaunchConfiguration('gui', default='true')
     use_joystick = LaunchConfiguration('use_joystick', default='false')  # Disable joystick by default for episodic runs
+    use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='false')  # Disable PlotJuggler by default for episodic runs
     
     declare_num_episodes_arg = DeclareLaunchArgument(
         'num_episodes',
@@ -61,6 +62,12 @@ def generate_launch_description():
         description='Set to "true" to enable joystick control (typically disabled for episodic runs)'
     )
     
+    declare_use_plotjuggler_arg = DeclareLaunchArgument(
+        'use_plotjuggler',
+        default_value='false',
+        description='Set to "true" to launch PlotJuggler for data visualization (typically disabled for episodic runs)'
+    )
+    
     # Include the main turtlebot_gazebo launch file
     turtlebot_gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -73,6 +80,7 @@ def generate_launch_description():
         launch_arguments={
             'gui': gui,
             'use_joystick': use_joystick,
+            'use_plotjuggler': use_plotjuggler,
             'use_sim_time': 'true'
         }.items()
     )
@@ -97,6 +105,7 @@ def generate_launch_description():
         declare_output_file_arg,
         declare_gui_arg,
         declare_use_joystick_arg,
+        declare_use_plotjuggler_arg,
         turtlebot_gazebo_launch,
         episode_manager_node
     ])
