@@ -219,6 +219,7 @@ def generate_launch_description():
         package='plotjuggler',
         executable='plotjuggler',
         name='plotjuggler',
+        parameters=[{'use_sim_time': use_sim_time}],
         condition=IfCondition(use_plotjuggler),
         output='screen'
     )
