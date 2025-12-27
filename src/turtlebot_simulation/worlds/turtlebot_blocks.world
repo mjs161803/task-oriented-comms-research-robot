@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.8">
   <world name="turtlebot_world">
-    
+      
     <!-- A global light source -->
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>

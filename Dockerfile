@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-rosdep \
     ros-jazzy-turtlebot4-simulator \
+    ros-jazzy-irobot-create-nodes \
     ros-jazzy-turtlebot4-description \
     ros-jazzy-turtlebot4-msgs \
     ros-jazzy-ros-gz \

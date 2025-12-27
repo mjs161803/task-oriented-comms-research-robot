@@ -41,7 +41,7 @@ def generate_launch_description():
     
     # Get URDF for TurtleBot4
     robot_description_file = PathJoinSubstitution([
-        pkg_turtlebot4_description,
+        pkg_turtlebot_simulation,
         'urdf',
         'standard',
         'turtlebot4.urdf.xacro'
@@ -142,14 +142,14 @@ def generate_launch_description():
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image@sensor_msgs/msg/Image[gz.msgs.Image',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
-            '/world/turtlebot_world/model/turtlebot4/link/imu_link/sensor/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/world/turtlebot_world/model/turtlebot4/link/oakd_imu_frame/sensor/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
         ],
         remappings=[
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image', '/oakd/rgb/preview/image_raw'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image', '/oakd/rgb/preview/depth'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '/oakd/rgb/preview/depth/points'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info', '/oakd/rgb/preview/camera_info'),
-            ('/world/turtlebot_world/model/turtlebot4/link/imu_link/sensor/imu_sensor/imu', '/imu'),
+            ('/world/turtlebot_world/model/turtlebot4/link/oakd_imu_frame/sensor/imu/data', '/imu'),
         ],
         output='screen'
     )
@@ -207,12 +207,12 @@ def generate_launch_description():
     
     # Block observer node - observes blocks and publishes sum of pairwise distances
     # Note: This node queries Gazebo via services
-    block_observer = Node(
-        package='turtlebot_simulation',
-        executable='block_observer.py',
-        parameters=[{'use_sim_time': use_sim_time}],
-        output='screen'
-    )
+    # block_observer = Node(
+    #     package='turtlebot_simulation',
+    #     executable='block_observer.py',
+    #     parameters=[{'use_sim_time': use_sim_time}],
+    #     output='screen'
+    # )
     
     # PlotJuggler node - visualizes ROS2 topics in real-time
     plotjuggler_node = Node(
@@ -239,7 +239,7 @@ def generate_launch_description():
         twist_mux_node,
         joy_node,
         teleop_twist_joy_node,
-        block_observer,
+        # block_observer,
         plotjuggler_node
     ])
 

@@ -13,6 +13,7 @@ install(DIRECTORY
   launch
   worlds
   config
+  urdf
   DESTINATION share/${PROJECT_NAME}/
 )
 
