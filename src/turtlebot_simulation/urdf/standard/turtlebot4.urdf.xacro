@@ -1,7 +1,10 @@
 <?xml version="1.0" ?>
 <robot name="turtlebot4" xmlns:xacro="http://ros.org/wiki/xacro">
-  <!-- Base create3 model -->
-  <xacro:include filename="$(find irobot_create_description)/urdf/create3.urdf.xacro" />
+  <!-- Gazebo simulator: set to 'classic' for Gazebo Classic or 'ignition' for Gazebo Harmonic -->
+  <xacro:arg name="gazebo" default="ignition" />
+
+  <!-- Base create3 model - using local copy with IMU fix for Gazebo Harmonic -->
+  <xacro:include filename="$(find turtlebot_simulation)/urdf/create3/create3.urdf.xacro" />
   <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/rplidar.urdf.xacro" />
   <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/oakd.urdf.xacro" />
   <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/camera_bracket.urdf.xacro" />

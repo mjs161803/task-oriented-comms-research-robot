@@ -142,14 +142,17 @@ def generate_launch_description():
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image@sensor_msgs/msg/Image[gz.msgs.Image',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
-            '/world/turtlebot_world/model/turtlebot4/link/oakd_imu_frame/sensor/imu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/model/turtlebot4/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+            '/model/turtlebot4/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
         ],
         remappings=[
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image', '/oakd/rgb/preview/image_raw'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image', '/oakd/rgb/preview/depth'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '/oakd/rgb/preview/depth/points'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info', '/oakd/rgb/preview/camera_info'),
-            ('/world/turtlebot_world/model/turtlebot4/link/oakd_imu_frame/sensor/imu/data', '/imu'),
+            ('/imu', '/imu/data'),
+            ('/model/turtlebot4/odometry', '/odom'),
         ],
         output='screen'
     )
