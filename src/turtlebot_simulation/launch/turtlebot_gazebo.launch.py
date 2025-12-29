@@ -38,6 +38,13 @@ def generate_launch_description():
         'config',
         'joystick.yaml'
     ])
+
+    # PlotJuggler layout file
+    plot_layout = PathJoinSubstitution([
+        pkg_turtlebot_simulation,
+        'config',
+        'plotjuggler_block_distances.json'
+    ])
     
     # Get URDF for TurtleBot4
     robot_description_file = PathJoinSubstitution([
@@ -145,6 +152,7 @@ def generate_launch_description():
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             '/model/turtlebot4/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
             '/model/turtlebot4/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+            '/world/turtlebot_world/pose/info@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
         ],
         remappings=[
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image', '/oakd/rgb/preview/image_raw'),
@@ -208,14 +216,13 @@ def generate_launch_description():
         output='screen'
     )
     
-    # Block observer node - observes blocks and publishes sum of pairwise distances
-    # Note: This node queries Gazebo via services
-    # block_observer = Node(
-    #     package='turtlebot_simulation',
-    #     executable='block_observer.py',
-    #     parameters=[{'use_sim_time': use_sim_time}],
-    #     output='screen'
-    # )
+    # Block observer node - subscribes to pose stream and publishes distances
+    block_observer = Node(
+        package='turtlebot_simulation',
+        executable='block_observer.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
     
     # PlotJuggler node - visualizes ROS2 topics in real-time
     plotjuggler_node = Node(
@@ -223,6 +230,7 @@ def generate_launch_description():
         executable='plotjuggler',
         name='plotjuggler',
         parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['--layout', plot_layout],
         condition=IfCondition(use_plotjuggler),
         output='screen'
     )
@@ -242,7 +250,7 @@ def generate_launch_description():
         twist_mux_node,
         joy_node,
         teleop_twist_joy_node,
-        # block_observer,
+        block_observer,
         plotjuggler_node
     ])
 
