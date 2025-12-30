@@ -5,7 +5,7 @@
 
   <!-- Base create3 model - using local copy with IMU fix for Gazebo Harmonic -->
   <xacro:include filename="$(find turtlebot_simulation)/urdf/create3/create3.urdf.xacro" />
-  <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/rplidar.urdf.xacro" />
+  <!-- <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/rplidar.urdf.xacro" /> -->
   <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/oakd.urdf.xacro" />
   <xacro:include filename="$(find turtlebot_simulation)/urdf/sensors/camera_bracket.urdf.xacro" />
   <xacro:include filename="$(find turtlebot_simulation)/urdf/standard/tower_standoff.urdf.xacro" />
@@ -114,10 +114,10 @@
 
   <!-- Turtlebot4 sensor definitions -->
 
-  <xacro:rplidar name="rplidar" parent_link="shell_link" gazebo="$(arg gazebo)">
+  <!-- <xacro:rplidar name="rplidar" parent_link="shell_link" gazebo="$(arg gazebo)">
     <origin xyz="${rplidar_x_offset} ${rplidar_y_offset} ${rplidar_z_offset}"
             rpy="0 0 ${pi/2}"/>
-  </xacro:rplidar>
+  </xacro:rplidar> -->
 
   <xacro:camera_bracket name="oakd_camera_bracket">
     <origin xyz="${camera_mount_x_offset} ${camera_mount_y_offset} ${camera_mount_z_offset}"/>

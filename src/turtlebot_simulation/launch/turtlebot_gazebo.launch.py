@@ -43,7 +43,7 @@ def generate_launch_description():
     plot_layout = PathJoinSubstitution([
         pkg_turtlebot_simulation,
         'config',
-        'plotjuggler_block_distances.json'
+        'imu_plot_config.xml'
     ])
     
     # Get URDF for TurtleBot4
@@ -65,7 +65,7 @@ def generate_launch_description():
     gui = LaunchConfiguration('gui', default='true')
     world = LaunchConfiguration('world', default=world_file)
     use_joystick = LaunchConfiguration('use_joystick', default='true')
-    use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='false')
+    use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='true')
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -93,7 +93,7 @@ def generate_launch_description():
     
     declare_use_plotjuggler_arg = DeclareLaunchArgument(
         'use_plotjuggler',
-        default_value='false',
+        default_value='true',
         description='Set to "true" to launch PlotJuggler for data visualization'
     )
     
@@ -146,8 +146,6 @@ def generate_launch_description():
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
-            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image@sensor_msgs/msg/Image[gz.msgs.Image',
-            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
             '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             '/model/turtlebot4/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
@@ -156,11 +154,8 @@ def generate_launch_description():
         ],
         remappings=[
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image', '/oakd/rgb/preview/image_raw'),
-            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/depth_image', '/oakd/rgb/preview/depth'),
-            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/points', '/oakd/rgb/preview/depth/points'),
             ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info', '/oakd/rgb/preview/camera_info'),
             ('/imu', '/imu/data'),
-            ('/model/turtlebot4/odometry', '/odom'),
         ],
         output='screen'
     )
