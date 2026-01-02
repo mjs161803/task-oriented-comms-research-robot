@@ -66,6 +66,7 @@ def generate_launch_description():
     world = LaunchConfiguration('world', default=world_file)
     use_joystick = LaunchConfiguration('use_joystick', default='true')
     use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='true')
+    use_local_perception = LaunchConfiguration('use_local_perception', default='false')
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
@@ -95,6 +96,12 @@ def generate_launch_description():
         'use_plotjuggler',
         default_value='true',
         description='Set to "true" to launch PlotJuggler for data visualization'
+    )
+    
+    declare_use_local_perception_arg = DeclareLaunchArgument(
+        'use_local_perception',
+        default_value='false',
+        description='Set to "true" to launch local_perception node for ML inference'
     )
     
     # Gazebo Harmonic (using ros_gz_sim)
@@ -230,12 +237,22 @@ def generate_launch_description():
         output='screen'
     )
     
+    # Local perception node - runs ML inference on sensor data
+    local_perception_node = Node(
+        package='turtlebot_simulation',
+        executable='local_perception.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        condition=IfCondition(use_local_perception),
+        output='screen'
+    )
+    
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
         declare_world_arg,
         declare_use_joystick_arg,
         declare_use_plotjuggler_arg,
+        declare_use_local_perception_arg,
         gz_sim,
         robot_state_publisher,
         spawn_turtlebot,
@@ -246,6 +263,7 @@ def generate_launch_description():
         joy_node,
         teleop_twist_joy_node,
         block_observer,
-        plotjuggler_node
+        plotjuggler_node,
+        local_perception_node
     ])
 

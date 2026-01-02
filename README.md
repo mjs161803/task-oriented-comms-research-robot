@@ -153,10 +153,35 @@ You can customize the launch with these arguments:
 - `use_sim_time:=true/false` - Use simulation time (default: true)
 - `world:=/path/to/world` - Path to custom world file
 - `use_plotjuggler:=true/false` - Enable/disable PlotJuggler for real-time data visualization (default: false)
+- `use_local_perception:=true/false` - Enable/disable local_perception node for ML inference (default: false)
 
 Example:
 ```bash
 ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py gui:=false
+```
+
+### Local Perception Node
+
+The local_perception node is an optional component that demonstrates how to integrate machine learning models with ROS2 sensor data. When enabled, it:
+
+- Subscribes to `/imu/data` (IMU sensor data)
+- Subscribes to `/oakd/rgb/preview/image_raw` (camera images)
+- Runs inference at 25Hz using a PyTorch model (skeleton provided)
+- Publishes integer results to `/agent_uplink` topic
+
+To enable the local_perception node:
+```bash
+ros2 launch turtlebot_simulation turtlebot_gazebo.launch.py use_local_perception:=true
+```
+
+**Note**: The node includes a PyTorch model skeleton. To use it with an actual model:
+1. Implement the `_initialize_model()` method to load your model
+2. Implement the `_preprocess_image()` and `_preprocess_imu()` methods to prepare sensor data
+3. Update the `_inference_callback()` method to run your model and process outputs
+
+You can also run the node standalone:
+```bash
+ros2 run turtlebot_simulation local_perception.py
 ```
 
 ### PlotJuggler Integration
@@ -319,11 +344,20 @@ ros2 topic list | grep camera
 
 ### IMU (Inertial Measurement Unit)
 
-- **IMU Topic**: `/imu` - IMU sensor data (orientation, angular velocity, linear acceleration)
+- **IMU Topic**: `/imu/data` - IMU sensor data (orientation, angular velocity, linear acceleration)
 
 You can view IMU data using:
 ```bash
-ros2 topic echo /imu
+ros2 topic echo /imu/data
+```
+
+### Agent Uplink
+
+- **Agent Uplink Topic**: `/agent_uplink` - Integer output from local_perception node (when enabled)
+
+This topic publishes the output of the ML model inference performed by the local_perception node. You can monitor it using:
+```bash
+ros2 topic echo /agent_uplink
 ```
 
 ## World Description

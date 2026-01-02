@@ -21,6 +21,7 @@ install(DIRECTORY
 install(PROGRAMS
   scripts/block_observer.py
   scripts/episode_manager.py
+  scripts/local_perception.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
