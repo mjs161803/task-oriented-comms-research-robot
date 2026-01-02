@@ -66,7 +66,7 @@ def generate_launch_description():
     world = LaunchConfiguration('world', default=world_file)
     use_joystick = LaunchConfiguration('use_joystick', default='true')
     use_plotjuggler = LaunchConfiguration('use_plotjuggler', default='true')
-    use_local_perception = LaunchConfiguration('use_local_perception', default='false')
+    use_local_perception = LaunchConfiguration('use_local_perception', default='true')
     
     declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
