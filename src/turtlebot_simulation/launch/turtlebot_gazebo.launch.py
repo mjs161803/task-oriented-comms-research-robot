@@ -100,7 +100,7 @@ def generate_launch_description():
     
     declare_use_local_perception_arg = DeclareLaunchArgument(
         'use_local_perception',
-        default_value='false',
+        default_value='true',
         description='Set to "true" to launch local_perception node for ML inference'
     )
     
