@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     python3-pip \
+    python3-yaml \
     python3-rosdep \
     ros-jazzy-turtlebot4-simulator \
     ros-jazzy-irobot-create-nodes \
@@ -40,6 +41,9 @@ RUN apt-get update && apt-get install -y \
     git \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PyTorch (CUDA 12.4 build; works on newer driver stacks including 13.0)
+RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124 --break-system-packages
 
 # Create workspace
 WORKDIR /root/workspace
