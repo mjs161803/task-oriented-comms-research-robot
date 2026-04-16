@@ -152,16 +152,16 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
-            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             '/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             '/model/turtlebot4/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry',
             '/model/turtlebot4/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
             '/world/turtlebot_world/pose/info@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
         ],
         remappings=[
-            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/image', '/oakd/rgb/preview/image_raw'),
-            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/rgbd_camera/camera_info', '/oakd/rgb/preview/camera_info'),
+            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/camera/image', '/oakd/rgb/preview/image_raw'),
+            ('/world/turtlebot_world/model/turtlebot4/link/oakd_rgb_camera_frame/sensor/camera/camera_info', '/oakd/rgb/preview/camera_info'),
             ('/imu', '/imu/data'),
         ],
         output='screen'
