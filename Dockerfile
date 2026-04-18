@@ -45,6 +45,9 @@ RUN apt-get update && apt-get install -y \
 # Install PyTorch (CUDA 12.4 build; works on newer driver stacks including 13.0)
 RUN python3 -m pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124 --break-system-packages
 
+# Install minisom for self-organizing maps
+RUN python3 -m pip install --no-cache-dir minisom --break-system-packages
+
 # Create workspace
 WORKDIR /root/workspace
 

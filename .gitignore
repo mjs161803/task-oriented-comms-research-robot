@@ -6,6 +6,10 @@
 # Episode scores output
 episode_scores.txt
 
+# Bag files
+bags/*
+!bags/.gitkeep
+
 # Python cache
 __pycache__/
 *.py[cod]
