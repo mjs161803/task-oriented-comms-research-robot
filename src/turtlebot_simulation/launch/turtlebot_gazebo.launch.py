@@ -254,6 +254,30 @@ def generate_launch_description():
         output='screen'
     )
     
+    # Sensor aggregator node - aggregates IMU and camera data
+    sensor_aggregator_node = Node(
+        package='turtlebot_simulation',
+        executable='sensor_aggregator.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+    
+    # Remote agent node - subscribes to uplink and publishes to downlink
+    remote_agent_node = Node(
+        package='turtlebot_simulation',
+        executable='remote_agent.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+    
+    # Local actuator node - subscribes to agent downlink
+    local_actuator_node = Node(
+        package='turtlebot_simulation',
+        executable='local_actuator.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+    
     return LaunchDescription([
         declare_use_sim_time_arg,
         declare_gui_arg,
@@ -273,6 +297,9 @@ def generate_launch_description():
         block_observer,
         teacher_node,
         plotjuggler_node,
-        local_perception_node
+        local_perception_node,
+        sensor_aggregator_node,
+        remote_agent_node,
+        local_actuator_node
     ])
 
