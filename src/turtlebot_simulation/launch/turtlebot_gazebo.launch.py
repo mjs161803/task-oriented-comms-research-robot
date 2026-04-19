@@ -226,6 +226,14 @@ def generate_launch_description():
         output='screen'
     )
     
+    # Teacher node - publishes goal_state based on block_distances threshold
+    teacher_node = Node(
+        package='turtlebot_simulation',
+        executable='teacher.py',
+        parameters=[{'use_sim_time': use_sim_time}],
+        output='screen'
+    )
+    
     # PlotJuggler node - visualizes ROS2 topics in real-time
     plotjuggler_node = Node(
         package='plotjuggler',
@@ -263,6 +271,7 @@ def generate_launch_description():
         joy_node,
         teleop_twist_joy_node,
         block_observer,
+        teacher_node,
         plotjuggler_node,
         local_perception_node
     ])

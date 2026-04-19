@@ -31,6 +31,7 @@ install(PROGRAMS
   scripts/block_observer.py
   scripts/episode_manager.py
   scripts/local_perception.py
+  scripts/teacher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
